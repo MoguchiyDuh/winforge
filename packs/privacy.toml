@@ -1,0 +1,812 @@
+meta = { id = "privacy", title = "Privacy", description = "Telemetry off at every policy location, CEIP/WER off, activity history and location off, advertising ID and input personalization off, Cortana/Bing consent off, Edge first-run and telemetry policies, IE first-run policies, WPBT blocked, telemetry binaries IFEO-blocked, RSoP and MRT reporting off" }
+
+[[tweak]]
+id = "telemetry-registry"
+name = "Telemetry: privacy values, opt-outs, env vars"
+group = "Telemetry registry"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo'
+name = "Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy'
+name = "TailoredExperiencesWithDiagnosticDataEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy'
+name = "HasAccepted"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Input\TIPC'
+name = "Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\InputPersonalization'
+name = "RestrictImplicitInkCollection"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\InputPersonalization'
+name = "RestrictImplicitTextCollection"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore'
+name = "HarvestContacts"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Personalization\Settings'
+name = "AcceptedPrivacyPolicy"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "Start_TrackProgs"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Siuf\Rules'
+name = "NumberOfSIUFInPeriod"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Siuf\Rules'
+name = "PeriodInNanoSeconds"
+regtype = "dword"
+apply = { delete = true }
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
+name = "AllowTelemetry"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+name = "POWERSHELL_TELEMETRY_OPTOUT"
+regtype = "sz"
+apply = "1"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+name = "DOTNET_CLI_TELEMETRY_OPTOUT"
+regtype = "sz"
+apply = "1"
+reset = { delete = true }
+
+[[tweak]]
+id = "telemetry-policy"
+name = "Telemetry: diagnostic policy at every location"
+group = "Telemetry policy"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "AllowTelemetry"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\WOW6432Node\Policies\Microsoft\Windows\DataCollection'
+name = "AllowTelemetry"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
+name = "AllowTelemetry"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "MaxTelemetryAllowed"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
+name = "MaxTelemetryAllowed"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\DataCollection'
+name = "AllowTelemetry"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "AllowCommercialDataPipeline"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "AllowDeviceNameInTelemetry"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "DisableEnterpriseAuthProxy"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "DisableTelemetryOptInSettingsUx"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "DisableTelemetryOptIn"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "DoNotShowFeedbackNotifications"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "AllowBuildPreview"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "AllowExperimentation"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "LimitDiagnosticLogCollection"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "LimitDumpCollection"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+name = "LimitEnhancedDiagnosticDataWindowsAnalytics"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds'
+name = "EnableConfigFlighting"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "ceip"
+name = "Telemetry: CEIP opt-out"
+group = "CEIP"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\SQMClient\Windows'
+name = "CEIPEnable"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\SQMClient\IE'
+name = "CEIPEnable"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Messenger\Client'
+name = "UCJoinLevel"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "wer"
+name = "Telemetry: Windows Error Reporting off"
+group = "Windows Error Reporting"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting'
+name = "Disabled"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting'
+name = "LoggingDisabled"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting'
+name = "DontSendAdditionalData"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting'
+name = "DontShowUI"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting'
+name = "DefaultConsent"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "command"
+apply = '''
+try { Disable-WindowsErrorReporting -ErrorAction Stop } catch { exit 1 }
+'''
+reset = '''
+try { Enable-WindowsErrorReporting -ErrorAction Stop } catch { exit 1 }
+'''
+check = '''
+try { $w = Get-WindowsErrorReporting -ErrorAction Stop } catch { exit 2 }
+if ($w -eq 'Disabled') { exit 0 }
+if ($w -eq 'Enabled') { exit 1 }
+exit 2
+'''
+
+[[tweak.action]]
+type = "service"
+name = "WerSvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "wercplsupport"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "appcompat"
+name = "Telemetry: app compat, inventory, PCA off"
+group = "App compatibility"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat'
+name = "DisableEngine"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat'
+name = "AITEnable"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat'
+name = "DisableInventory"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat'
+name = "DisableUAR"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat'
+name = "DisablePCA"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "activity-history"
+name = "Telemetry: activity history upload off"
+group = "Activity history"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+name = "EnableActivityFeed"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+name = "PublishUserActivities"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+name = "UploadUserActivities"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "location"
+name = "Telemetry: location service and consent off"
+group = "Location"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "lfsvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location'
+name = "Value"
+regtype = "sz"
+apply = "Deny"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location'
+name = "Value"
+regtype = "sz"
+apply = "Deny"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}'
+name = "SensorPermissionState"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\Maps'
+name = "AutoUpdateEnabled"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors'
+name = "DisableLocation"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors'
+name = "DisableLocationScripts"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "wpbt"
+name = "Telemetry: WPBT firmware payload execution off"
+group = "WPBT"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager'
+name = "DisableWpbtExecution"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "rsop-logging-off"
+name = "Registry: RSoP logging off"
+group = "RSoP logging"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+name = "RSoPLogging"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "cortana-user-search"
+name = "Cortana: per-user Bing/consent/location off, taskbar search hidden"
+group = "Cortana and web search"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
+name = "BingSearchEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
+name = "SearchboxTaskbarMode"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
+name = "CortanaConsent"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
+name = "AllowSearchToUseLocation"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "shell-policies"
+name = "Shell polish: feeds, app alerts, recent apps off"
+group = "Shell polish"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds'
+name = "EnableFeeds"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer'
+name = "NoNewAppAlert"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\Explorer'
+name = "HideRecentlyAddedApps"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "ifeo-telemetry-block"
+name = "Performance: IFEO block telemetry binaries (taskkill)"
+group = "IFEO"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\CompatTelRunner.exe'
+name = "Debugger"
+regtype = "sz"
+apply = 'C:\Windows\System32\taskkill.exe'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\AggregatorHost.exe'
+name = "Debugger"
+regtype = "sz"
+apply = 'C:\Windows\System32\taskkill.exe'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\DeviceCensus.exe'
+name = "Debugger"
+regtype = "sz"
+apply = 'C:\Windows\System32\taskkill.exe'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\FeatureLoader.exe'
+name = "Debugger"
+regtype = "sz"
+apply = 'C:\Windows\System32\taskkill.exe'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\BingChatInstaller.exe'
+name = "Debugger"
+regtype = "sz"
+apply = 'C:\Windows\System32\taskkill.exe'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\BGAUpsell.exe'
+name = "Debugger"
+regtype = "sz"
+apply = 'C:\Windows\System32\taskkill.exe'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\BCILauncher.exe'
+name = "Debugger"
+regtype = "sz"
+apply = 'C:\Windows\System32\taskkill.exe'
+reset = { delete = true }
+
+[[tweak]]
+id = "edge-browser-policy"
+name = "Edge: first-run, telemetry, shopping, rewards off"
+group = "Edge removal"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "HideFirstRunExperience"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "DefaultBrowserSettingsCampaignEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "DiagnosticData"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "PersonalizationReportingEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "ShowMicrosoftRewards"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "EdgeShoppingAssistantEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "UserFeedbackAllowed"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "AlternateErrorPagesEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "ConfigureDoNotTrack"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Edge'
+name = "EdgeCollectionsEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "ie-policy-keys"
+name = "IE: first-run/migration policies, process off"
+group = "Internet Explorer 11"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main'
+name = "DisableFirstRunCustomize"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main'
+name = "IsMigrationDone"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Main'
+name = "PreventPerformanceFirstRunExperience"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Internet Explorer\Main'
+name = "DisableFirstRunCustomize"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Internet Explorer\Main'
+name = "IsInternetExplorerProcessEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "wu-mrt-reporting-off"
+name = "Updates: MRT infection reporting off"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\MRT'
+name = "DontReportInfectionInformation"
+regtype = "dword"
+apply = 1
+reset = { delete = true }

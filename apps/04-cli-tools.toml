@@ -1,0 +1,53 @@
+meta = { id = "cli-tools", title = "CLI tools" }
+
+[[app]]
+name = "ripgrep"
+id = "BurntSushi.ripgrep.MSVC"
+
+[[app]]
+name = "fd"
+id = "sharkdp.fd"
+
+[[app]]
+name = "fzf"
+id = "junegunn.fzf"
+
+[[app]]
+name = "zoxide"
+id = "ajeetdsouza.zoxide"
+
+[[app]]
+name = "jq"
+id = "jqlang.jq"
+
+[[app]]
+name = "bat"
+id = "sharkdp.bat"
+
+[[app]]
+name = "eza"
+id = "eza-community.eza"
+
+[[app]]
+name = "Neovim"
+id = "Neovim.Neovim"
+
+[[app]]
+name = "Zed"
+id = "ZedIndustries.Zed"
+
+[[app]]
+name = "Everything"
+id = "voidtools.Everything"
+
+[[app]]
+name = "7-Zip"
+id = "7zip.7zip"
+
+[[app]]
+name = "croc"
+id = "schollz.croc"
+
+[[app]]
+name = "rclone"
+id = "Rclone.Rclone"

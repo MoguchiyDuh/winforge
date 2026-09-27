@@ -1,0 +1,9 @@
+meta = { id = "communication", title = "Communication" }
+
+[[app]]
+name = "Discord"
+id = "Discord.Discord"
+
+[[app]]
+name = "Telegram"
+id = "Telegram.TelegramDesktop"

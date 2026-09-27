@@ -1,0 +1,45 @@
+meta = { id = "media", title = "Media" }
+
+[[app]]
+name = "FFmpeg"
+id = "Gyan.FFmpeg"
+
+[[app]]
+name = "yt-dlp"
+id = "yt-dlp.yt-dlp"
+
+[[app]]
+name = "qBittorrent"
+id = "qBittorrent.qBittorrent"
+
+[[app]]
+name = "VLC"
+id = "VideoLAN.VLC"
+
+[[app]]
+name = "ShareX"
+id = "ShareX.ShareX"
+
+[[app]]
+name = "Ditto"
+id = "Ditto.Ditto"
+
+[[app]]
+name = "qView"
+id = "jurplel.qView"
+
+[[app]]
+name = "OBS Studio"
+id = "OBSProject.OBSStudio"
+
+[[app]]
+name = "Blender"
+id = "BlenderFoundation.Blender"
+
+[[app]]
+name = "Unity Hub"
+id = "Unity.UnityHub"
+
+[[app]]
+name = "GIMP 3 (+ PhotoGIMP)"
+id = "GIMP.GIMP.3"

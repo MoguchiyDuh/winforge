@@ -1,0 +1,470 @@
+meta = { id = "look-and-feel", title = "Look and feel", description = "Dark theme with Iris Pastel accent 8764B8, transparency on, pure black desktop and lock-screen wallpaper with theme file patch, Windows Black cursor scheme, mouse acceleration off, all shell animations off" }
+
+[[tweak]]
+id = "dark-theme"
+name = "Appearance: dark theme, no auto colorization"
+group = "Dark theme and accent"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "AppsUseLightTheme"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "SystemUsesLightTheme"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "ColorPrevalence"
+regtype = "dword"
+apply = 1
+reset = 0
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "AutoColorization"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorPrevalence"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "accent-iris"
+name = "Appearance: Iris Pastel accent 8764B8"
+group = "Dark theme and accent"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
+name = "AccentPalette"
+regtype = "binary"
+apply = [212, 181, 255, 0, 192, 150, 250, 0, 168, 130, 221, 0, 135, 100, 184, 0, 91, 62, 131, 0, 60, 39, 89, 0, 43, 28, 64, 0, 142, 140, 216, 0]
+reset = [166, 216, 255, 0, 118, 185, 237, 0, 66, 156, 227, 0, 0, 120, 215, 0, 0, 90, 158, 0, 0, 66, 117, 0, 0, 38, 66, 0, 247, 99, 12, 0]
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
+name = "AccentColorMenu"
+regtype = "dword"
+apply = 0xFFB86487
+reset = 0xFF0078D7
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
+name = "StartColorMenu"
+regtype = "dword"
+apply = 0xFF833E5B
+reset = 0xFF0063B1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "AccentColor"
+regtype = "dword"
+apply = 0xFFB86487
+reset = 0xFF0078D7
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationColor"
+regtype = "dword"
+apply = 0xC48764B8
+reset = 0xC40078D7
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationAfterglow"
+regtype = "dword"
+apply = 0xC48764B8
+reset = 0xC40078D7
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationColorBalance"
+regtype = "dword"
+apply = 89
+reset = 89
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationAfterglowBalance"
+regtype = "dword"
+apply = 10
+reset = 10
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationBlurBalance"
+regtype = "dword"
+apply = 1
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationGlowBalance"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "EnableWindowColorization"
+regtype = "dword"
+apply = 1
+reset = 0
+
+[[tweak]]
+id = "transparency-on"
+name = "Appearance: transparency effects on"
+group = "Dark theme and accent"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "EnableTransparency"
+regtype = "dword"
+apply = 1
+reset = 1
+
+[[tweak]]
+id = "wallpaper-black"
+name = "Appearance: pure black wallpaper desktop + lock"
+group = "Black wallpaper"
+preset = "manual"
+
+[[tweak.action]]
+type = "file"
+from = "black.bmp"
+to = 'C:\Windows\Web\Wallpaper\winforge\black.bmp'
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "WallPaper"
+regtype = "sz"
+apply = 'C:\Windows\Web\Wallpaper\winforge\black.bmp'
+reset = 'C:\Windows\Web\Wallpaper\Windows\img0.jpg'
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "WallpaperStyle"
+regtype = "sz"
+apply = "10"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "TileWallpaper"
+regtype = "sz"
+apply = "0"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Personalization'
+name = "LockScreenImage"
+regtype = "sz"
+apply = 'C:\Windows\Web\Wallpaper\winforge\black.bmp'
+reset = { delete = true }
+
+[[tweak]]
+id = "wallpaper-theme-file"
+name = "Appearance: patch active theme file wallpaper"
+group = "Black wallpaper"
+preset = "manual"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$tf = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes' -Name CurrentTheme -ErrorAction SilentlyContinue).CurrentTheme
+if ($tf -and (Test-Path -LiteralPath $tf)) {
+    $txt = Get-Content -LiteralPath $tf -Raw
+    $new = [regex]::Replace($txt, '(?m)^Wallpaper=.*$', 'Wallpaper=C:\Windows\Web\Wallpaper\winforge\black.bmp')
+    if ($new -ne $txt) { Set-Content -LiteralPath $tf -Value $new -Encoding UTF8 }
+}
+exit 0
+'''
+reset = '''
+$tf = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes' -Name CurrentTheme -ErrorAction SilentlyContinue).CurrentTheme
+if ($tf -and (Test-Path -LiteralPath $tf)) {
+    $txt = Get-Content -LiteralPath $tf -Raw
+    $new = [regex]::Replace($txt, '(?m)^Wallpaper=.*$', 'Wallpaper=C:\Windows\Web\Wallpaper\Windows\img0.jpg')
+    if ($new -ne $txt) { Set-Content -LiteralPath $tf -Value $new -Encoding UTF8 }
+}
+exit 0
+'''
+check = '''
+$tf = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes' -Name CurrentTheme -ErrorAction SilentlyContinue).CurrentTheme
+if (-not $tf -or -not (Test-Path -LiteralPath $tf)) { exit 1 }
+$line = Get-Content -LiteralPath $tf -ErrorAction SilentlyContinue | Where-Object { $_ -match '^(?i)Wallpaper=' } | Select-Object -First 1
+if (-not $line) { exit 1 }
+$v = ($line -replace '^(?i)Wallpaper=', '').Trim()
+if ($v -ieq 'C:\Windows\Web\Wallpaper\winforge\black.bmp') { exit 0 }
+if ($v -ieq 'C:\Windows\Web\Wallpaper\Windows\img0.jpg') { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "cursor-black"
+name = "Appearance: Windows Black cursor scheme"
+group = "Cursor"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Scheme Source"
+regtype = "dword"
+apply = 2
+reset = 0
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = ""
+regtype = "sz"
+apply = "Windows Black"
+reset = "Windows Default (system scheme)"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Arrow"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\arrow_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Help"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\help_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "AppStarting"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\wait_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Wait"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\busy_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "IBeam"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\beam_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "NWPen"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\pen_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "No"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\no_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeNS"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size4_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeWE"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size3_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeNWSE"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size2_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeNESW"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size1_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeAll"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\move_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "UpArrow"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\up_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Pin"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\pin_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Person"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\person_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Crosshair"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\cross_r.cur'
+reset = { delete = true }
+
+[[tweak]]
+id = "mouse"
+name = "Input: mouse speed 7, acceleration off"
+group = "Mouse"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Mouse'
+name = "MouseSensitivity"
+regtype = "sz"
+apply = "7"
+reset = "10"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Mouse'
+name = "MouseSpeed"
+regtype = "sz"
+apply = "0"
+reset = "1"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Mouse'
+name = "MouseThreshold1"
+regtype = "sz"
+apply = "0"
+reset = "6"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Mouse'
+name = "MouseThreshold2"
+regtype = "sz"
+apply = "0"
+reset = "10"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Mouse'
+name = "MouseTrails"
+regtype = "sz"
+apply = "0"
+reset = "0"
+
+[[tweak]]
+id = "animations-off"
+name = "Appearance: all shell animations off"
+group = "Animations"
+preset = "manual"
+desc = "turns off window minimize/maximize animation, taskbar animations and Aero Peek (custom visual effects preset; reset restores stock animation values)"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop\WindowMetrics'
+name = "MinAnimate"
+regtype = "sz"
+apply = '0'
+reset = '1'
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "UserPreferencesMask"
+regtype = "binary"
+apply = [144, 18, 3, 128, 16, 0, 0, 0]
+reset = [158, 62, 7, 128, 18, 0, 0, 0]
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarAnimations"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "EnableAeroPeek"
+regtype = "dword"
+apply = 0
+reset = 1

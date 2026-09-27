@@ -1,0 +1,13 @@
+meta = { id = "gaming", title = "Gaming" }
+
+[[app]]
+name = "Steam"
+id = "Valve.Steam"
+
+[[app]]
+name = "Moonlight"
+id = "MoonlightGameStreamingProject.Moonlight"
+
+[[app]]
+name = "Vortex"
+id = "NexusMods.Vortex"

@@ -1,0 +1,156 @@
+meta = { id = "dev-setup", title = "Dev setup", description = "WSL2 enabled (features + kernel + default version 2, reboot required after enabling features), OpenSSH server installed as a capability with auto-start service, firewall port 22 and PowerShell default shell, Win32 long paths on; WSL features and OpenSSH capability need internet" }
+
+[[tweak]]
+id = "wsl2-features"
+name = "WSL2: enable Subsystem and Virtual Machine Platform (reboot)"
+group = "wsl2"
+preset = "manual"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$ErrorActionPreference = 'Stop'
+foreach ($f in 'Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform') {
+    dism.exe /Online /Enable-Feature /FeatureName:$f /All /NoRestart | Out-Null
+    $code = $LASTEXITCODE
+    if ($code -ne 0 -and $code -ne 3010) { exit 1 }
+    if ($code -eq 3010) { Write-Output 'reboot required to finish' }
+}
+'''
+reset = '''
+$ErrorActionPreference = 'Stop'
+foreach ($f in 'Microsoft-Windows-Subsystem-Linux', 'VirtualMachinePlatform') {
+    $state = (Get-WindowsOptionalFeature -Online -FeatureName $f -ErrorAction Stop).State
+    if ($state -like 'Enabled' -or $state -eq 'EnablePending') {
+        dism.exe /Online /Disable-Feature /FeatureName:$f /NoRestart | Out-Null
+        $code = $LASTEXITCODE
+        if ($code -ne 0 -and $code -ne 3010) { exit 1 }
+        if ($code -eq 3010) { Write-Output 'reboot required to finish' }
+    }
+}
+'''
+check = '''
+$ErrorActionPreference = 'Stop'
+$a = (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux).State
+$b = (Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform).State
+$on = @('Enabled', 'EnablePending')
+$off = @('Disabled', 'DisablePending', 'DisabledWithPayloadRemoved')
+if ($on -contains $a -and $on -contains $b) { exit 0 }
+if ($off -contains $a -and $off -contains $b) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "wsl2-default-version"
+name = "WSL2: update kernel and set default version 2"
+group = "wsl2"
+preset = "manual"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$ErrorActionPreference = 'Stop'
+wsl.exe --update 2>$null
+$out = wsl.exe --set-default-version 2 2>&1
+if ($LASTEXITCODE -ne 0) { Write-Output $out; exit 1 }
+'''
+reset = '''
+$ErrorActionPreference = 'Stop'
+$out = wsl.exe --set-default-version 1 2>&1
+if ($LASTEXITCODE -ne 0) { Write-Output $out; exit 1 }
+'''
+check = '''
+$v = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss' -Name DefaultVersion -ErrorAction SilentlyContinue).DefaultVersion
+if ($v -eq 2) { exit 0 }
+if ($v -eq 1 -or $null -eq $v) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "ssh-server-capability"
+name = "OpenSSH: install server capability (internet)"
+group = "openssh"
+preset = "manual"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$ErrorActionPreference = 'Stop'
+$c = Get-WindowsCapability -Online -Name 'OpenSSH.Server*' | Select-Object -First 1
+if ($c.State -eq 'Installed') { exit 0 }
+$r = Add-WindowsCapability -Online -Name $c.Name -ErrorAction Stop
+if ($r.RestartNeeded) { Write-Output 'reboot required to finish' }
+'''
+reset = '''
+$ErrorActionPreference = 'Stop'
+$c = Get-WindowsCapability -Online -Name 'OpenSSH.Server*' | Select-Object -First 1
+if ($c.State -eq 'Installed') {
+    Remove-WindowsCapability -Online -Name $c.Name -ErrorAction Stop | Out-Null
+}
+'''
+check = '''
+$c = Get-WindowsCapability -Online -Name 'OpenSSH.Server*' -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($null -eq $c) { exit 2 }
+if ($c.State -eq 'Installed') { exit 0 }
+if ($c.State -eq 'NotPresent') { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "ssh-server-config"
+name = "OpenSSH: auto-start service, firewall port 22, PowerShell shell"
+group = "openssh"
+preset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "sshd"
+apply = "auto"
+reset = "manual"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$ErrorActionPreference = 'Stop'
+$rule = Get-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -ErrorAction SilentlyContinue
+if ($rule) {
+    Enable-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -ErrorAction Stop
+} else {
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 -ErrorAction Stop | Out-Null
+}
+'''
+reset = '''
+$ErrorActionPreference = 'Stop'
+$rule = Get-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -ErrorAction SilentlyContinue
+if ($rule) {
+    Disable-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -ErrorAction Stop
+}
+'''
+check = '''
+$rule = Get-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -ErrorAction SilentlyContinue
+if ($null -eq $rule) { exit 1 }
+if ($rule.Enabled -eq 'True') { exit 0 }
+exit 2
+'''
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\OpenSSH'
+name = "DefaultShell"
+regtype = "sz"
+apply = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+reset = { delete = true }
+
+[[tweak]]
+id = "filesystem-long-paths"
+name = "Storage: Win32 long paths enabled"
+group = "Filesystem"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem'
+name = "LongPathsEnabled"
+regtype = "dword"
+apply = 1
+reset = { delete = true }

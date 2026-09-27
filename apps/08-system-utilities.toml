@@ -1,0 +1,34 @@
+meta = { id = "system-utilities", title = "System utilities" }
+
+[[app]]
+name = "WizTree"
+id = "AntibodySoftware.WizTree"
+
+[[app]]
+name = "Revo Uninstaller"
+id = "RevoUninstaller.RevoUninstaller"
+
+[[app]]
+name = "HWiNFO"
+id = "REALiX.HWiNFO"
+
+[[app]]
+name = "CPU-Z"
+id = "CPUID.CPU-Z"
+
+[[app]]
+name = "GPU-Z"
+id = "TechPowerUp.GPU-Z"
+
+[[app]]
+name = "CrystalDiskInfo"
+id = "CrystalDewWorld.CrystalDiskInfo"
+
+[[app]]
+name = "Rufus"
+id = "Rufus.Rufus"
+
+[[app]]
+name = "Wintoys"
+id = "9N0DW3H4QR9W"
+source = "msstore"

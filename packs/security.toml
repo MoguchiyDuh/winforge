@@ -1,0 +1,450 @@
+meta = { id = "security", title = "Security", description = "Disables Defender (policy, preferences, services, tamper pin, realtime suspend toggle), firewall, UAC prompts, VBS/HVCI, SmartScreen and SMB1. Turn Tamper Protection OFF manually in Windows Security before applying. SMB1 off breaks old NAS sharing" }
+
+[[tweak]]
+id = "uac-never-notify"
+name = "UAC: never notify (EnableLUA stays on)"
+group = "UAC never notify"
+preset = "max"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+name = "ConsentPromptBehaviorAdmin"
+regtype = "dword"
+apply = 0
+reset = 5
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+name = "PromptOnSecureDesktop"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+name = "EnableLUA"
+regtype = "dword"
+apply = 1
+reset = 1
+
+[[tweak]]
+id = "firewall-disable"
+name = "Firewall: all profiles disabled"
+group = "Firewall off"
+preset = "max"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\DomainProfile'
+name = "EnableFirewall"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile'
+name = "EnableFirewall"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile'
+name = "EnableFirewall"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "command"
+apply = 'Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled False'
+reset = 'Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True'
+check = '''
+try { $profs = @(Get-NetFirewallProfile -ErrorAction Stop) } catch { exit 2 }
+if ($profs.Count -ne 3) { exit 2 }
+$off = 0
+$on = 0
+foreach ($p in $profs) {
+    if ($p.Enabled -eq $false) { $off++ }
+    elseif ($p.Enabled -eq $true) { $on++ }
+    else { exit 2 }
+}
+if ($off -eq 3) { exit 0 }
+if ($on -eq 3) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "vbs-hvci-off"
+name = "VBS/HVCI: hypervisor and Memory Integrity off"
+group = "VBS / HVCI disable"
+preset = "max"
+
+[[tweak.action]]
+type = "command"
+apply = 'bcdedit /set hypervisorlaunchtype off'
+reset = 'bcdedit /set hypervisorlaunchtype auto'
+check = '''
+$out = & "$env:SystemRoot\System32\bcdedit.exe" /enum '{current}' 2>$null
+if ($LASTEXITCODE -ne 0) { exit 2 }
+$line = @($out | Where-Object { $_ -match 'hypervisorlaunchtype\s+(\S+)' })[0]
+if (-not $line) { exit 1 }
+if ($line -match 'hypervisorlaunchtype\s+off\s*$') { exit 0 }
+if ($line -match 'hypervisorlaunchtype\s+(auto|on)\s*$') { exit 1 }
+exit 2
+'''
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard'
+name = "EnableVirtualizationBasedSecurity"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard'
+name = "RequirePlatformSecurityFeatures"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity'
+name = "HVCIEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "defender-policy"
+name = "Defender: DisableAntiSpyware/DisableAntiVirus policy"
+group = "Defender policy"
+preset = "max"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
+name = "DisableAntiSpyware"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
+name = "DisableAntiVirus"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
+name = "DisableRoutinelyTakingAction"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection'
+name = "DisableRealtimeMonitoring"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection'
+name = "DisableBehaviorMonitoring"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection'
+name = "DisableOnAccessProtection"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection'
+name = "DisableScanOnRealtimeEnable"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection'
+name = "DisableScanThroughNetwork"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection'
+name = "DisableIOAVProtection"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet'
+name = "SpynetReporting"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet'
+name = "SubmitSamplesConsent"
+regtype = "dword"
+apply = 2
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet'
+name = "DisableBlockAtFirstSeen"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "defender-mppreference"
+name = "Defender: Set-MpPreference kill switches"
+group = "Defender preferences"
+preset = "max"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+Set-MpPreference -DisableRealtimeMonitoring $true
+Set-MpPreference -DisableBehaviorMonitoring $true
+Set-MpPreference -DisableIOAVProtection $true
+Set-MpPreference -DisableScriptScanning $true
+Set-MpPreference -DisableArchiveScanning $true
+Set-MpPreference -DisableBlockAtFirstSeen $true
+Set-MpPreference -DisableRemovableDriveScanning $true
+Set-MpPreference -MAPSReporting Disabled
+Set-MpPreference -SubmitSamplesConsent NeverSend
+Set-MpPreference -PUAProtection Disabled
+Set-MpPreference -EnableNetworkProtection Disabled
+'''
+check = '''
+try { $p = Get-MpPreference -ErrorAction Stop } catch { exit 2 }
+$names = @('DisableRealtimeMonitoring', 'DisableBehaviorMonitoring', 'DisableIOAVProtection', 'DisableScriptScanning', 'DisableArchiveScanning', 'DisableBlockAtFirstSeen', 'DisableRemovableDriveScanning')
+$applied = 0
+$default = 0
+foreach ($n in $names) {
+    $v = $p.$n
+    if ($v -eq $true) { $applied++ }
+    elseif ($v -eq $false) { $default++ }
+    else { exit 2 }
+}
+if ([int]$p.MAPSReporting -eq 0) { $applied++ }
+elseif ($null -eq $p.MAPSReporting -or [int]$p.MAPSReporting -eq 2) { $default++ }
+else { exit 2 }
+if ([int]$p.SubmitSamplesConsent -eq 2) { $applied++ }
+elseif ($null -eq $p.SubmitSamplesConsent -or [int]$p.SubmitSamplesConsent -eq 1) { $default++ }
+else { exit 2 }
+if ($applied -eq 9) { exit 0 }
+if ($default -eq 9) { exit 1 }
+exit 2
+'''
+reset = '''
+Set-MpPreference -DisableRealtimeMonitoring $false
+Set-MpPreference -DisableBehaviorMonitoring $false
+Set-MpPreference -DisableIOAVProtection $false
+Set-MpPreference -DisableScriptScanning $false
+Set-MpPreference -DisableArchiveScanning $false
+Set-MpPreference -DisableBlockAtFirstSeen $false
+Set-MpPreference -DisableRemovableDriveScanning $false
+Set-MpPreference -MAPSReporting Advanced
+Set-MpPreference -SubmitSamplesConsent SendSafeSamples
+Set-MpPreference -PUAProtection Disabled
+Set-MpPreference -EnableNetworkProtection Disabled
+'''
+
+[[tweak]]
+id = "defender-services"
+name = "Defender: services and drivers disabled"
+group = "Defender services and scan tasks"
+preset = "max"
+
+[[tweak.action]]
+type = "service"
+name = "WinDefend"
+apply = "disabled"
+reset = "auto"
+
+[[tweak.action]]
+type = "service"
+name = "WdNisSvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "Sense"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "SecurityHealthService"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "wscsvc"
+apply = "disabled"
+reset = "auto"
+
+[[tweak.action]]
+type = "service"
+name = "WdNisDrv"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "WdFilter"
+apply = "disabled"
+reset = "boot"
+
+[[tweak.action]]
+type = "service"
+name = "WdBoot"
+apply = "disabled"
+reset = "boot"
+
+[[tweak]]
+id = "defender-tamperprotection"
+name = "Defender: pin TamperProtection off"
+group = "Defender policy"
+preset = "max"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows Defender\Features'
+name = "TamperProtection"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "defender-realtime-suspend"
+name = "Security: suspend Defender real-time monitoring (red warning)"
+group = "Defender preferences"
+preset = "max"
+desc = "flips DisableRealtimeMonitoring alone for temporary benchmarking or setup work (leaves a red Windows Security warning; exits skip when Tamper Protection blocks it)"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+try {
+    Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
+} catch {
+    Write-Output 'blocked: turn Tamper Protection off in Windows Security first'
+    exit 3
+}
+'''
+reset = '''
+try {
+    Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction Stop
+} catch {
+    exit 3
+}
+'''
+check = '''
+try { $p = Get-MpPreference -ErrorAction Stop } catch { exit 2 }
+if ($p.DisableRealtimeMonitoring -eq $true) { exit 0 }
+if ($p.DisableRealtimeMonitoring -eq $false) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "securityhealth-account-state"
+name = "Security: MS account protection page flag"
+group = "Windows Security nags off"
+preset = "max"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows Security Health\State'
+name = "AccountProtection_MicrosoftAccount_Disconnected"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "securityhealth-autostart"
+name = "Security: SecurityHealth systray autostart removed"
+group = "Windows Security nags off"
+preset = "max"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+name = "SecurityHealth"
+regtype = "sz"
+apply = { delete = true }
+reset = 'C:\Windows\System32\SecurityHealthSystray.exe'
+
+[[tweak]]
+id = "advanced-smb1-off"
+name = "Advanced: SMB1 protocol off"
+group = "advanced"
+preset = "max"
+
+[[tweak.action]]
+type = "command"
+apply = 'Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart'
+reset = 'exit 0'
+check = '''
+try { $f = Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -ErrorAction Stop } catch { exit 2 }
+if ($f.State -eq 'Enabled') { exit 1 }
+if ($f.State -eq 'Disabled' -or $f.State -eq 'DisabledWithPayloadRemoved' -or $f.State -eq 'Absent') { exit 0 }
+exit 2
+'''
+
+[[tweak]]
+id = "smartscreen-off"
+name = "Security: SmartScreen off"
+group = "SmartScreen"
+preset = "max"
+desc = "sets the EnableSmartScreen policy to 0 so Explorer and Edge no longer run SmartScreen reputation checks (reset deletes the policy value, the stock state)"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+New-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Force -ErrorAction SilentlyContinue | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name EnableSmartScreen -Value 0 -PropertyType DWord -Force | Out-Null
+'''
+reset = '''
+Remove-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name EnableSmartScreen -ErrorAction SilentlyContinue
+exit 0
+'''
+check = '''
+$v = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name EnableSmartScreen -ErrorAction SilentlyContinue).EnableSmartScreen
+if ($null -eq $v) { exit 1 }
+if ([int]$v -eq 0) { exit 0 }
+exit 2
+'''

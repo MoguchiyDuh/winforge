@@ -1,0 +1,429 @@
+meta = { id = "performance", title = "Performance", description = "Scheduler quantum 38, RAM-sized svchost split, IFEO CPU/IO priorities, Game DVR off, HAGS on, power throttling off, MPO off, memory compression off (16GB+), best-performance visual effects, Nagle off, separate Explorer processes, BSoD stop codes visible, search indexing off, multimedia throttling and menu delay off; reboot needed for some changes" }
+
+[[tweak]]
+id = "win32-priority-separation"
+name = "Performance: Win32PrioritySeparation 38 (short quantum)"
+group = "Priorities"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl'
+name = "Win32PrioritySeparation"
+regtype = "dword"
+apply = 38
+reset = 2
+
+[[tweak]]
+id = "svchost-split"
+name = "Telemetry: svchost split threshold sized to RAM"
+group = "svchost split"
+preset = "std"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$m = (Get-CimInstance Win32_PhysicalMemory | Measure-Object Capacity -Sum).Sum / 1KB
+New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name SvcHostSplitThresholdInKB -PropertyType DWord -Value ([int]$m) -Force | Out-Null
+'''
+reset = '''
+Remove-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name SvcHostSplitThresholdInKB -ErrorAction SilentlyContinue
+exit 0
+'''
+check = '''
+$v = (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name SvcHostSplitThresholdInKB -ErrorAction SilentlyContinue).SvcHostSplitThresholdInKB
+if ($null -eq $v) { exit 1 }
+$m = (Get-CimInstance Win32_PhysicalMemory | Measure-Object Capacity -Sum).Sum / 1KB
+if ([int]$v -eq [int]$m) { exit 0 }
+exit 2
+'''
+
+[[tweak]]
+id = "ifeo-perfoptions"
+name = "Performance: IFEO CPU and IO priority classes"
+group = "IFEO"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SearchIndexer.exe\PerfOptions'
+name = "CpuPriorityClass"
+regtype = "dword"
+apply = 5
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\SearchIndexer.exe\PerfOptions'
+name = "IoPriority"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\ctfmon.exe\PerfOptions'
+name = "CpuPriorityClass"
+regtype = "dword"
+apply = 5
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\ctfmon.exe\PerfOptions'
+name = "IoPriority"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\fontdrvhost.exe\PerfOptions'
+name = "CpuPriorityClass"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\fontdrvhost.exe\PerfOptions'
+name = "IoPriority"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sihost.exe\PerfOptions'
+name = "CpuPriorityClass"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\sihost.exe\PerfOptions'
+name = "IoPriority"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "advanced-mpo-off"
+name = "Advanced: multi-plane overlay (MPO) off"
+group = "advanced"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\Dwm'
+name = "OverlayTestMode"
+regtype = "dword"
+apply = 5
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers'
+name = "DisableOverlays"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "advanced-memory-compression-off"
+name = "Advanced: memory compression off (16GB+ RAM)"
+group = "advanced"
+preset = "std"
+
+[[tweak.action]]
+type = "command"
+apply = 'if ((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory -ge 16GB) { Disable-MMAgent -mc } else { exit 3 }'
+reset = 'Enable-MMAgent -mc'
+check = '''
+try { $mm = Get-MMAgent -ErrorAction Stop } catch { exit 2 }
+if ($mm.MemoryCompression -eq $false) { exit 0 }
+if ($mm.MemoryCompression -eq $true) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "game-dvr-off"
+name = "Performance: Game DVR and Game Bar capture off"
+group = "Game DVR"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR'
+name = "AllowGameDVR"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR'
+name = "AllowGameCapture"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR'
+name = "AppCaptureEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\System\GameConfigStore'
+name = "GameDVR_Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "hags"
+name = "Performance: hardware accelerated GPU scheduling on"
+group = "GPU scheduling"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers'
+name = "HwSchMode"
+regtype = "dword"
+apply = 2
+reset = { delete = true }
+
+[[tweak]]
+id = "power-throttling-off"
+name = "Performance: power throttling off"
+group = "Priorities"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling'
+name = "PowerThrottlingOff"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "visual-effects-performance"
+name = "Visual effects: best performance preset"
+group = "Visual effects"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "DragFullWindows"
+regtype = "sz"
+apply = '0'
+reset = '1'
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "MenuShowDelay"
+regtype = "sz"
+apply = '200'
+reset = '400'
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop\WindowMetrics'
+name = "MinAnimate"
+regtype = "sz"
+apply = '0'
+reset = '1'
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "UserPreferencesMask"
+regtype = "binary"
+apply = [144, 18, 3, 128, 16, 0, 0, 0]
+reset = [158, 30, 7, 128, 18, 0, 0, 0]
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects'
+name = "VisualFXSetting"
+regtype = "dword"
+apply = 3
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "EnableAeroPeek"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ListviewAlphaSelect"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ListviewShadow"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarAnimations"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "nagle-off"
+name = "Performance: Nagle off, low-latency TCP (per interface)"
+group = "Network"
+preset = "std"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$ti = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces'
+$fail = 0
+foreach ($k in @(Get-ChildItem -Path $ti -ErrorAction SilentlyContinue)) {
+    $ip = (Get-ItemProperty -LiteralPath $k.PSPath -Name DhcpIPAddress -ErrorAction SilentlyContinue).DhcpIPAddress
+    $ifaceAddrs = (Get-ItemProperty -LiteralPath $k.PSPath -Name IPAddress -ErrorAction SilentlyContinue).IPAddress
+    if (-not $ip -and -not $ifaceAddrs) { continue }
+    foreach ($n in @('TcpAckFrequency', 'TCPNoDelay', 'TcpDelAckTicks')) {
+        try { New-ItemProperty -LiteralPath $k.PSPath -Name $n -Value 1 -PropertyType DWord -Force -ErrorAction Stop | Out-Null } catch { $fail++ }
+    }
+}
+if ($fail -gt 0) { exit 1 }
+'''
+reset = '''
+$ti = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces'
+foreach ($k in @(Get-ChildItem -Path $ti -ErrorAction SilentlyContinue)) {
+    foreach ($n in @('TcpAckFrequency', 'TCPNoDelay', 'TcpDelAckTicks')) { Remove-ItemProperty -LiteralPath $k.PSPath -Name $n -ErrorAction SilentlyContinue }
+}
+exit 0
+'''
+check = '''
+$ti = 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces'
+$cand = 0
+$applied = 0
+$default = 0
+foreach ($k in @(Get-ChildItem -Path $ti -ErrorAction SilentlyContinue)) {
+    $ip = (Get-ItemProperty -LiteralPath $k.PSPath -Name DhcpIPAddress -ErrorAction SilentlyContinue).DhcpIPAddress
+    $ifaceAddrs = (Get-ItemProperty -LiteralPath $k.PSPath -Name IPAddress -ErrorAction SilentlyContinue).IPAddress
+    if (-not $ip -and -not $ifaceAddrs) { continue }
+    $cand++
+    $v1 = (Get-ItemProperty -LiteralPath $k.PSPath -Name TcpAckFrequency -ErrorAction SilentlyContinue).TcpAckFrequency
+    $v2 = (Get-ItemProperty -LiteralPath $k.PSPath -Name TCPNoDelay -ErrorAction SilentlyContinue).TCPNoDelay
+    $v3 = (Get-ItemProperty -LiteralPath $k.PSPath -Name TcpDelAckTicks -ErrorAction SilentlyContinue).TcpDelAckTicks
+    if ($v1 -eq 1 -and $v2 -eq 1 -and $v3 -eq 1) { $applied++ }
+    elseif ($null -eq $v1 -and $null -eq $v2 -and $null -eq $v3) { $default++ }
+    else { exit 2 }
+}
+if ($cand -eq 0) { exit 2 }
+if ($applied -eq $cand) { exit 0 }
+if ($default -eq $cand) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "advanced-explorer-separate-process"
+name = "Advanced: separate Explorer processes"
+group = "advanced"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "SeparateProcess"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "bsod-display-parameters"
+name = "Storage: BSoD shows stop code and parameters"
+group = "advanced"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\CrashControl'
+name = "DisplayParameters"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "search-indexing-off"
+name = "Performance: Windows Search indexing service off"
+group = "Search indexing"
+preset = "max"
+desc = "disables the WSearch indexer so file contents are not indexed at the cost of search speed (16GB+ machines only; part of the max preset)"
+
+[[tweak.action]]
+type = "service"
+name = "WSearch"
+apply = "disabled"
+reset = "delayed"
+
+[[tweak]]
+id = "network-throttling-off"
+name = "Performance: multimedia network throttling off"
+group = "Multimedia profile"
+preset = "max"
+desc = "sets NetworkThrottlingIndex to 0xFFFFFFFF so MMCSS does not throttle network traffic every 1ms while media plays"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile'
+name = "NetworkThrottlingIndex"
+regtype = "dword"
+apply = 0xFFFFFFFF
+reset = 10
+
+[[tweak]]
+id = "system-responsiveness"
+name = "Performance: SystemResponsiveness 0 for foreground apps"
+group = "Multimedia profile"
+preset = "max"
+desc = "sets SystemResponsiveness to 0 so MMCSS reserves no CPU for background services"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile'
+name = "SystemResponsiveness"
+regtype = "dword"
+apply = 0
+reset = 20
+
+[[tweak]]
+id = "menushowdelay"
+name = "Performance: menu show delay 0"
+group = "Menus"
+preset = "max"
+desc = "sets MenuShowDelay to 0 so menus open instantly (visual-effects-performance uses 200; this is the max-preset zero)"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "MenuShowDelay"
+regtype = "sz"
+apply = '0'
+reset = '400'

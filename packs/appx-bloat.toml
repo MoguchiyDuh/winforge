@@ -1,0 +1,306 @@
+meta = { id = "appx-bloat", title = "AppX bloat removal", description = "Removes Store app bloat (Cortana, Bing apps, Xbox, media, Copilot-era packages). One-way: appx has no stock restore.", oneway = true }
+
+[[tweak]]
+id = "appx-cortana"
+name = "Appx: Cortana family"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.549981C3F5F10'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Windows.Cortana'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Windows.SearchCortex'
+apply = "remove"
+
+[[tweak]]
+id = "appx-bing"
+name = "Appx: Bing apps"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingNews'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingWeather'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingSearch'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingFinance'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingSports'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingTranslator'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingFoodAndDrink'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingHealthAndFitness'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingTravel'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.BingWallpaper'
+apply = "remove"
+
+[[tweak]]
+id = "appx-edge-legacy"
+name = "Appx: legacy Edge (EdgeHTML)"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.MicrosoftEdge'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.MicrosoftEdgeDevToolsClient'
+apply = "remove"
+
+[[tweak]]
+id = "appx-inbox-cruft"
+name = "Appx: inbox cruft (GetHelp, Maps, Solitaire, ...)"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.GetHelp'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Getstarted'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.WindowsMaps'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.WindowsFeedbackHub'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.WindowsFeedback'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.WindowsCommunicationsApps'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.MicrosoftSolitaireCollection'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.WindowsAlarms'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.WindowsSoundRecorder'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.MicrosoftStickyNotes'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.MicrosoftOfficeHub'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.People'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Windows.PeopleExperienceHost'
+apply = "remove"
+
+[[tweak]]
+id = "appx-productivity"
+name = "Appx: productivity bloat (Teams, Todos, Clipchamp)"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.PowerAutomateDesktop'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Todos'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.MicrosoftTeams'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'MicrosoftTeams'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Clipchamp.Clipchamp'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.WindowsDevHome'
+apply = "remove"
+
+[[tweak]]
+id = "appx-phone-xbox-media"
+name = "Appx: Phone Link, Xbox, media apps"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.YourPhone'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.XboxApp'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.XboxGameOverlay'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.XboxGamingOverlay'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.XboxIdentityProvider'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.XboxSpeechToTextOverlay'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.ZuneMusic'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.ZuneVideo'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.GamingApp'
+apply = "remove"
+
+[[tweak]]
+id = "appx-retired"
+name = "Appx: retired packages (3D, Skype, OfficeLens)"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Windows.StartExperiencesApp'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Microsoft3DViewer'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Print3D'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.OfficeLens'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.SkypeApp'
+apply = "remove"
+
+[[tweak]]
+id = "appx-copilot-webexperience"
+name = "Appx: Copilot era + Web Experience"
+group = "AppX packages"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Copilot'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.MicrosoftCopilot'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.Windows.Ai.Copilot.Provider'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'Microsoft.OutlookForWindows'
+apply = "remove"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'MicrosoftWindows.Client.WebExperience'
+apply = "remove"

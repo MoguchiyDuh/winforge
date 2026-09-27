@@ -1,0 +1,17 @@
+meta = { id = "network", title = "Network" }
+
+[[app]]
+name = "ZeroTier One (zerotier-cli)"
+id = "ZeroTier.ZeroTierOne"
+
+[[app]]
+name = "Clash Verge Rev"
+id = "ClashVergeRev.ClashVergeRev"
+
+[[app]]
+name = "Tailscale"
+id = "Tailscale.Tailscale"
+
+[[app]]
+name = "RustDesk"
+id = "RustDesk.RustDesk"

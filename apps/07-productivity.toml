@@ -1,0 +1,17 @@
+meta = { id = "productivity", title = "Productivity" }
+
+[[app]]
+name = "Obsidian"
+id = "Obsidian.Obsidian"
+
+[[app]]
+name = "LibreOffice"
+id = "TheDocumentFoundation.LibreOffice"
+
+[[app]]
+name = "Notepad++"
+id = "Notepad++.Notepad++"
+
+[[app]]
+name = "Bitwarden"
+id = "Bitwarden.Bitwarden"

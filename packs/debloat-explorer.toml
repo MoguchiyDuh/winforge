@@ -1,0 +1,55 @@
+meta = { id = "debloat-explorer", title = "Explorer bloat removal", description = "Explorer folder-type auto discovery off (wipes all saved folder views), Git and ShareX context-menu entries removed. One-way: wiped folder views and removed app menu entries are not restored.", oneway = true }
+
+[[tweak]]
+id = "folder-type-discovery"
+name = "Explorer: folder-type auto discovery off"
+group = "Folder type discovery"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+foreach ($p in @('HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags', 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\BagMRU')) {
+    if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction SilentlyContinue }
+}
+New-Item -Path 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell' -Force | Out-Null
+New-ItemProperty -LiteralPath 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell' -Name FolderType -Value NotSpecified -PropertyType String -Force | Out-Null
+'''
+check = '''
+$v = (Get-ItemProperty -LiteralPath 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell' -Name FolderType -ErrorAction SilentlyContinue).FolderType
+if ($v -eq 'NotSpecified') { exit 0 }
+exit 1
+'''
+
+[[tweak]]
+id = "context-menu-git-sharex"
+name = "Context menu: remove Git and ShareX entries"
+group = "Context menu"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+foreach ($p in @(
+    'HKLM:\SOFTWARE\Classes\Directory\shell\git_gui',
+    'HKLM:\SOFTWARE\Classes\Directory\shell\git_shell',
+    'HKLM:\SOFTWARE\Classes\Directory\Background\shell\git_gui',
+    'HKLM:\SOFTWARE\Classes\Directory\Background\shell\git_shell',
+    'HKCU:\Software\Classes\*\shell\ShareX',
+    'HKCU:\Software\Classes\Directory\shell\ShareX'
+)) {
+    if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction SilentlyContinue }
+}
+exit 0
+'''
+check = '''
+foreach ($p in @(
+    'HKLM:\SOFTWARE\Classes\Directory\shell\git_gui',
+    'HKLM:\SOFTWARE\Classes\Directory\shell\git_shell',
+    'HKLM:\SOFTWARE\Classes\Directory\Background\shell\git_gui',
+    'HKLM:\SOFTWARE\Classes\Directory\Background\shell\git_shell',
+    'HKCU:\Software\Classes\*\shell\ShareX',
+    'HKCU:\Software\Classes\Directory\shell\ShareX'
+)) {
+    if (Test-Path -LiteralPath $p) { exit 1 }
+}
+exit 0
+'''

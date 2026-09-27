@@ -1,0 +1,50 @@
+meta = { id = "dev-runtimes", title = "Dev / runtimes" }
+
+[[app]]
+name = "Git"
+id = "Git.Git"
+
+[[app]]
+name = "GitHub CLI"
+id = "GitHub.cli"
+
+[[app]]
+name = "uv (Python manager)"
+id = "astral-sh.uv"
+
+[[app]]
+name = "Node.js LTS"
+id = "OpenJS.NodeJS.LTS"
+
+[[app]]
+name = "Lua"
+id = "DEVCOM.Lua"
+
+[[app]]
+name = "Rustup"
+id = "Rustlang.Rustup"
+
+[[app]]
+name = "MSYS2"
+id = "MSYS2.MSYS2"
+
+[[app]]
+name = "CMake"
+id = "Kitware.CMake"
+
+[[app]]
+name = "Ninja"
+id = "Ninja-build.Ninja"
+
+[[app]]
+name = "VS 2022 Build Tools (C++, no IDE)"
+id = "Microsoft.VisualStudio.2022.BuildTools"
+override = "--quiet --wait --norestart --nocache --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+
+[[app]]
+name = "VirtualBox"
+id = "Oracle.VirtualBox"
+
+[[app]]
+name = "Ubuntu 24.04 (WSL)"
+id = "Canonical.Ubuntu.2404"

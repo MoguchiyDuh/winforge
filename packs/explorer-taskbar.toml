@@ -1,0 +1,656 @@
+meta = { id = "explorer-taskbar", title = "Explorer and Taskbar", description = "File Explorer view and launch defaults, recent files and sync-provider ads off, folder group-by none, context-menu bloat blocked and New submenu trimmed, taskbar buttons and tray set, AutoPlay and autorun off, Snap Assist off, thumbnail cache kept, NumLock on at boot, Sticky Keys popup off, keyboard at repeat floor, clipboard history on, first-logon animation off, taskbar search box hidden" }
+
+[[tweak]]
+id = "explorer-view"
+name = "Explorer: hidden files, extensions, open at This PC"
+group = "File Explorer"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "Hidden"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowSuperHidden"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "HideFileExt"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "LaunchTo"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "NavPaneShowAllFolders"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "explorer-recent"
+name = "Explorer: recent files, sync provider, pretty path off"
+group = "File Explorer"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowSyncProviderNotifications"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "Start_TrackDocs"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowRecent"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowFrequent"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "DontPrettyPath"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "group-by-none"
+name = "Explorer: group by = None (new views + Downloads; run Debloat once to clear saved views)"
+group = "Group by none"
+preset = "std"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$k = 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell'
+New-Item -Path $k -Force -ErrorAction SilentlyContinue | Out-Null
+New-ItemProperty -LiteralPath $k -Name GroupView -Value 0 -PropertyType DWord -Force -ErrorAction SilentlyContinue | Out-Null
+New-ItemProperty -LiteralPath $k -Name GroupByKey -Value '' -PropertyType String -Force -ErrorAction SilentlyContinue | Out-Null
+$t = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderTypes\{885a186e-a440-4ada-812b-db871b942259}\TopViews\{00000000-0000-0000-0000-000000000000}'
+New-Item -Path $t -Force -ErrorAction SilentlyContinue | Out-Null
+Set-ItemProperty -LiteralPath $t -Name ColumnList -Value 'prop:0(34)System.ItemNameDisplay;0System.DateModified;0System.ItemTypeText;0System.Size;1System.DateCreated;1System.Author;1System.Category;1System.Keywords;1System.Title' -Type String -Force
+Set-ItemProperty -LiteralPath $t -Name GroupAscending -Value 0 -Type DWord -Force
+Set-ItemProperty -LiteralPath $t -Name GroupBy -Value '' -Type String -Force
+Set-ItemProperty -LiteralPath $t -Name LogicalViewMode -Value 1 -Type DWord -Force
+Set-ItemProperty -LiteralPath $t -Name Name -Value NoName -Type String -Force
+Set-ItemProperty -LiteralPath $t -Name Order -Value 0 -Type DWord -Force
+Set-ItemProperty -LiteralPath $t -Name PrimaryProperty -Value System.DateModified -Type String -Force
+Set-ItemProperty -LiteralPath $t -Name SortByList -Value 'prop:System.DateModified' -Type String -Force
+exit 0
+'''
+reset = '''
+foreach ($n in @('GroupView', 'GroupByKey')) {
+    Remove-ItemProperty -LiteralPath 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell' -Name $n -ErrorAction SilentlyContinue
+}
+Remove-Item -LiteralPath 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderTypes\{885a186e-a440-4ada-812b-db871b942259}' -Recurse -Force -ErrorAction SilentlyContinue
+exit 0
+'''
+check = '''
+$p = Get-ItemProperty -LiteralPath 'HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\Bags\AllFolders\Shell' -ErrorAction SilentlyContinue
+$t = Get-ItemProperty -LiteralPath 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderTypes\{885a186e-a440-4ada-812b-db871b942259}\TopViews\{00000000-0000-0000-0000-000000000000}' -ErrorAction SilentlyContinue
+$gv = if ($p) { $p.GroupView } else { $null }
+$gbk = if ($p) { $p.GroupByKey } else { $null }
+$gb = if ($t) { $t.GroupBy } else { $null }
+if ($gv -eq 0 -and $null -ne $gbk -and $gbk -eq '' -and $null -ne $gb -and $gb -eq '') { exit 0 }
+if ($null -eq $gv -and $null -eq $gbk -and $null -eq $gb) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "context-menu-blocked"
+name = "Context menu: block shell extension handlers"
+group = "Context menu"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{f81e9010-6ea4-11ce-a7ff-00aa003ca9f6}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{e2bf9676-5f8f-435c-97eb-11607a5bedf7}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{E61BF828-5E63-4287-BEF1-60B1A4FDE0E3}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{474C98EE-CF3D-41f5-80E3-4AAB0AB04301}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{596AB062-B4D2-4215-9F74-E9109B0A8153}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{09A47860-11B0-4DA5-AFA5-26D86198A780}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{a2a9545d-a0c2-42b4-9708-a0b2badd77c8}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{90AA3A4E-1CBA-4233-B8BB-535773D48449}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{3D1975AF-48C6-4f8e-A182-BE0E08FA86A9}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{F2E8B4A1-9C7D-4F6E-B3A5-8D2C1F4E9B7A}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{7BA4C740-9E81-11CF-99D3-00AA004AE837}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = '{1d27f844-3a1f-4410-85ac-14651078412d}'
+regtype = "sz"
+apply = ''
+reset = { delete = true }
+
+[[tweak]]
+id = "context-menu-new"
+name = "Context menu: remove New submenu entries"
+group = "Context menu"
+preset = "std"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+foreach ($t in @('.bmp', '.contact', '.library-ms', '.rtf')) {
+    $k = 'HKLM:\SOFTWARE\Classes\' + $t + '\ShellNew'
+    if (Test-Path -LiteralPath $k) { Remove-Item -LiteralPath $k -Recurse -Force -ErrorAction SilentlyContinue }
+}
+exit 0
+'''
+reset = '''
+$types = @{
+    '.bmp'        = @{ NullFile = ''; ItemName = '@C:\Windows\system32\mspaint.exe,-59414' }
+    '.rtf'        = @{ Data = '{\rtf1}'; ItemName = '@C:\Program Files\Windows NT\Accessories\WORDPAD.EXE,-213' }
+    '.contact'    = @{ command = '"C:\Program Files\Windows Mail\Wab.exe" /CreateContact "%1"'; iconpath = 'C:\Program Files\Windows Mail\wab.exe,1'; MenuText = '@C:\Program Files\Common Files\system\wab32res.dll,-10203' }
+    '.library-ms' = @{ Handler = '{c7ca6167-2f46-4c4c-98b2-c92591368971}'; IconPath = 'C:\Windows\System32\imageres.dll,-1001'; NullFile = '' }
+}
+foreach ($t in $types.Keys) {
+    $p = 'HKLM:\SOFTWARE\Classes\' + $t + '\ShellNew'
+    New-Item -Path $p -Force -ErrorAction SilentlyContinue | Out-Null
+    foreach ($name in $types[$t].Keys) {
+        $v = $types[$t][$name]
+        if ($name -eq 'Data') {
+            New-ItemProperty -LiteralPath $p -Name $name -Value ([byte[]][char[]]$v) -PropertyType Binary -Force -ErrorAction SilentlyContinue | Out-Null
+        } else {
+            New-ItemProperty -LiteralPath $p -Name $name -Value $v -PropertyType String -Force -ErrorAction SilentlyContinue | Out-Null
+        }
+    }
+}
+exit 0
+'''
+check = '''
+$found = 0
+foreach ($t in @('.bmp', '.contact', '.library-ms', '.rtf')) {
+    if (Test-Path -LiteralPath ('HKLM:\SOFTWARE\Classes\' + $t + '\ShellNew')) { $found++ }
+}
+if ($found -eq 0) { exit 0 }
+if ($found -eq 4) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "taskbar-buttons"
+name = "Taskbar: Task View, People, Ink buttons off"
+group = "Taskbar"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowTaskViewButton"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "PeopleBand"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowWindowsInkWorkspaceButton"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "taskbar-grouping"
+name = "Taskbar: combine buttons, no secondary glom"
+group = "Taskbar"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarGlomLevel"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "MMTaskbarGlomLevel"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "taskbar-tray"
+name = "Taskbar: always show tray icons (auto-tray off)"
+group = "Taskbar"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "EnableAutoTray"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer'
+name = "EnableAutoTray"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "shell-polish"
+name = "Shell polish: Meet Now, Cortana button, shake off"
+group = "Shell polish"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "HideSCAMeetNow"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowCortanaButton"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "DisallowShaking"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "autoplay-off"
+name = "Shell polish: AutoPlay off"
+group = "Shell polish"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers'
+name = "DisableAutoplay"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "autorun-off"
+name = "Shell polish: autorun.inf ignored on all drives"
+group = "Shell polish"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer'
+name = "NoDriveTypeAutoRun"
+regtype = "dword"
+apply = 255
+reset = 145
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer'
+name = "NoDriveTypeAutoRun"
+regtype = "dword"
+apply = 255
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer'
+name = "NoAutorun"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "advanced-snap-assist-off"
+name = "Advanced: Snap Assist off"
+group = "advanced"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "SnapAssist"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "thumbnail-cache-autorun"
+name = "Storage: thumbnail cache never auto-cleaned"
+group = "Filesystem and sign-in polish"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache'
+name = "Autorun"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache'
+name = "Autorun"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak]]
+id = "numlock-at-boot"
+name = "Sign-in: NumLock on at boot screen"
+group = "Filesystem and sign-in polish"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKU\.DEFAULT\Control Panel\Keyboard'
+name = "InitialKeyboardIndicators"
+regtype = "sz"
+apply = "2147483650"
+reset = { delete = true }
+
+[[tweak]]
+id = "sticky-keys"
+name = "Input: Sticky Keys Shift x5 popup off"
+group = "Sticky Keys"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Accessibility\StickyKeys'
+name = "Flags"
+regtype = "sz"
+apply = "506"
+reset = "510"
+
+[[tweak]]
+id = "keyboard"
+name = "Input: keyboard repeat at GUI floor"
+group = "Keyboard"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Keyboard'
+name = "KeyboardDelay"
+regtype = "sz"
+apply = "0"
+reset = "1"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Keyboard'
+name = "KeyboardSpeed"
+regtype = "sz"
+apply = "31"
+reset = "31"
+
+[[tweak]]
+id = "clipboard-history"
+name = "Input: clipboard history on"
+group = "Clipboard"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Clipboard'
+name = "EnableClipboardHistory"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+name = "AllowClipboardHistory"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "logon-animation-off"
+name = "Logon: first-logon animation and startup sound off"
+group = "Logon animation"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+name = "EnableFirstLogonAnimation"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\BootAnimation'
+name = "DisableStartupSound"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "cortana-search-policy"
+name = "Cortana: policy kill + hide taskbar search"
+group = "Cortana and web search"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "AllowCortana"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "AllowCortanaAboveLock"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "AllowCloudSearch"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "ConnectedSearchUseWeb"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "DisableWebSearch"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "DoNotAllowWebSearch"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "DisableCortana"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "ConfigureSearchOnTaskbarMode"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "SearchOnTaskbarMode"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "EnableDynamicContentInWSB"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\InputPersonalization'
+name = "AllowInputPersonalization"
+regtype = "dword"
+apply = 0
+reset = { delete = true }

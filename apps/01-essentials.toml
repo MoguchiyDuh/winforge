@@ -1,0 +1,26 @@
+meta = { id = "essentials", title = "Essentials" }
+
+[[app]]
+name = "PowerShell 7"
+id = "Microsoft.PowerShell"
+
+[[app]]
+name = "Windows Terminal"
+id = "Microsoft.WindowsTerminal"
+
+[[app]]
+name = "PowerToys"
+id = "Microsoft.PowerToys"
+
+[[app]]
+name = "EarTrumpet"
+id = "9NBLGGH516XP"
+source = "msstore"
+
+[[app]]
+name = "PowerToys Run: Currency Converter"
+id = "advaith.CurrencyConverterPowerToys"
+
+[[app]]
+name = "PowerToys Run: Everything"
+id = "lin-ycv.EverythingPowerToys"

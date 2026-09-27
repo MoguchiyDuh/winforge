@@ -1,0 +1,965 @@
+meta = { id = "background-noise", title = "Background noise", description = "Telemetry and diagnostic services off, WMI telemetry autologgers off, scheduled telemetry/CEIP/Office/Defender tasks disabled, content delivery and spotlight off, notification and security nags off, Edge updater services/tasks off, print spooler, remote assistance, UWP background apps and misc consumer services off" }
+
+[[tweak]]
+id = "svc-background-noise"
+name = "Services: background noise and telemetry off"
+group = "Background noise services"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "DiagTrack"
+apply = "disabled"
+reset = "auto"
+
+[[tweak.action]]
+type = "service"
+name = "diagnosticshub.standardcollector.service"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "wisvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "PcaSvc"
+apply = "disabled"
+reset = "auto"
+
+[[tweak.action]]
+type = "service"
+name = "WdiServiceHost"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "WdiSystemHost"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "Wecsvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "UCPD"
+apply = "disabled"
+reset = "auto"
+
+[[tweak.action]]
+type = "service"
+name = "dam"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "GpuEnergyDrv"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "NetBT"
+apply = "disabled"
+reset = "system"
+
+[[tweak.action]]
+type = "service"
+name = "CscService"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "SharedAccess"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "edgeupdate"
+apply = "disabled"
+reset = "auto"
+
+[[tweak.action]]
+type = "service"
+name = "edgeupdatemsvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "MapsBroker"
+apply = "manual"
+reset = "delayed"
+
+[[tweak.action]]
+type = "service"
+name = "StorSvc"
+apply = "manual"
+reset = "delayed"
+
+[[tweak]]
+id = "wmi-autologgers-off"
+name = "Autologgers: WMI telemetry ETW logs off"
+group = "WMI autologgers"
+preset = "min"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+foreach ($n in @('DiagTrack-Listener', 'SQMLogger', 'SetupPlatformTel', 'DiagLog', 'NetTrace')) {
+    $p = "HKLM:\SYSTEM\CurrentControlSet\Control\WMI\Autologger\$n"
+    if (Test-Path -LiteralPath $p) {
+        New-ItemProperty -LiteralPath $p -Name Start -Value 0 -PropertyType DWord -Force | Out-Null
+    }
+}
+exit 0
+'''
+reset = '''
+foreach ($n in @('DiagTrack-Listener', 'SQMLogger', 'SetupPlatformTel', 'DiagLog', 'NetTrace')) {
+    $p = "HKLM:\SYSTEM\CurrentControlSet\Control\WMI\Autologger\$n"
+    if (Test-Path -LiteralPath $p) {
+        New-ItemProperty -LiteralPath $p -Name Start -Value 1 -PropertyType DWord -Force | Out-Null
+    }
+}
+exit 0
+'''
+check = '''
+$applied = 0
+$default = 0
+foreach ($n in @('DiagTrack-Listener', 'SQMLogger', 'SetupPlatformTel', 'DiagLog', 'NetTrace')) {
+    $p = "HKLM:\SYSTEM\CurrentControlSet\Control\WMI\Autologger\$n"
+    $v = (Get-ItemProperty -LiteralPath $p -Name Start -ErrorAction SilentlyContinue).Start
+    if ($v -eq 0) { $applied++ } else { $default++ }
+}
+if ($applied -eq 5) { exit 0 }
+if ($default -eq 5) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "tasks-telemetry-off"
+name = "Tasks: telemetry, CEIP, maps, diagnostics, Office off"
+group = "Scheduled telemetry tasks"
+preset = "min"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Application Experience\'
+name = "Microsoft Compatibility Appraiser"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Application Experience\'
+name = "ProgramDataUpdater"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Application Experience\'
+name = "Autochk Proxy"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Customer Experience Improvement Program\'
+name = "Consolidator"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Customer Experience Improvement Program\'
+name = "UsbCeip"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Customer Experience Improvement Program\'
+name = "KernelCeipTask"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\DiskDiagnostic\'
+name = "Microsoft-Windows-DiskDiagnosticDataCollector"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Maps\'
+name = "MapsToastTask"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Maps\'
+name = "MapsUpdateTask"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\MemoryDiagnostic\'
+name = "ProcessMemoryDiagnosticEvents"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\MemoryDiagnostic\'
+name = "RunFullMemoryDiagnostic"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\PI\'
+name = "Sqm-Tasks"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Power Efficiency Diagnostics\'
+name = "AnalyzeSystem"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Windows Error Reporting\'
+name = "QueueReporting"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Feedback\'
+name = "DmClient"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Feedback\'
+name = "DmClientOnScenarioDownload"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Shell\'
+name = "FamilySafetyMonitor"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Shell\'
+name = "FamilySafetyRefreshTask"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Office\'
+name = "OfficeTelemetryAgentFallBack2019"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Office\'
+name = "OfficeTelemetryAgentLogOn2019"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Office\'
+name = "OfficeTelemetryAgentTask"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Office\'
+name = "Office 15 Subscription Heartbeat"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\AppxDeploymentClient\'
+name = "UCPD velocity"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak]]
+id = "consumer-features"
+name = "Telemetry: consumer features and spotlight off"
+group = "Consumer features"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableWindowsConsumerFeatures"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableSoftLanding"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableTailoredExperiencesWithDiagnosticData"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableThirdPartySuggestions"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableWindowsSpotlightOnActionCenter"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableWindowsSpotlightOnSettings"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableWindowsSpotlightWindowsWelcomeExperience"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "content-delivery-off"
+name = "Content: suggestions, spotlight, silent installs off"
+group = "Content delivery"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-310093Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-338387Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-338388Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-338389Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-338393Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-353694Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-353696Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SubscribedContent-353698Enabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SilentInstalledAppsEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SoftLandingEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "SystemPaneSuggestionsEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "RotatingLockScreenEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "RotatingLockScreenOverlayEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
+name = "PreInstalledAppsEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "notification-nags-off"
+name = "Notifications: ReviOS nag suppression policies"
+group = "Notification nags"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\Explorer'
+name = "NoBalloonFeatureAdvertisements"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\Explorer'
+name = "NoAutoTrayNotify"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications'
+name = "NoCloudApplicationNotification"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+name = "DisableCloudOptimizedContent"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement'
+name = "ScoobeSystemSettingEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\Context\CloudExperienceHostIntent\Wireless'
+name = "ScoobeCheckCompleted"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "security-nags"
+name = "Security: nags, systray and Watson reporting off"
+group = "Windows Security nags off"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Notifications'
+name = "DisableNotifications"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Notifications'
+name = "DisableEnhancedNotifications"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray'
+name = "HideSystray"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows Defender Security Center\Notifications'
+name = "DisableNotifications"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\UX Configuration'
+name = "NotificationSuppress"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\UX Configuration'
+name = "Notification_Suppress"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Reporting'
+name = "DisableEnhancedNotifications"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Reporting'
+name = "DisableGenericRePorts"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "defender-scan-tasks"
+name = "Defender: scheduled scan tasks disabled"
+group = "Defender services and scan tasks"
+preset = "min"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Windows Defender\'
+name = "Windows Defender Cache Maintenance"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Windows Defender\'
+name = "Windows Defender Cleanup"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Windows Defender\'
+name = "Windows Defender Scheduled Scan"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Windows Defender\'
+name = "Windows Defender Verification"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak.action]]
+type = "task"
+path = '\Microsoft\Windows\Windows Defender\'
+name = "Windows Defender History Scan"
+apply = "disabled"
+reset = "enabled"
+
+[[tweak]]
+id = "spooler-disable"
+name = "Spooler: print service disabled"
+group = "Print Spooler off"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "Spooler"
+apply = "disabled"
+reset = "auto"
+
+[[tweak]]
+id = "remote-assistance-off"
+name = "Remote Assistance: incoming help requests off"
+group = "Remote Assistance off"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\Remote Assistance'
+name = "fAllowToGetHelp"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\Remote Assistance'
+name = "fAllowFullControl"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak]]
+id = "advanced-uwp-background-off"
+name = "Advanced: UWP background apps off"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications'
+name = "GlobalUserDisabled"
+regtype = "dword"
+apply = 1
+reset = 0
+
+[[tweak]]
+id = "edge-updater-services"
+name = "Edge: disable updater services"
+group = "Edge removal"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "edgeupdate"
+apply = "disabled"
+reset = "auto"
+
+[[tweak.action]]
+type = "service"
+name = "edgeupdatemsvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak.action]]
+type = "service"
+name = "MicrosoftEdgeElevationService"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "edge-updater-tasks"
+name = "Edge: disable EdgeUpdate scheduled tasks"
+group = "Edge removal"
+preset = "min"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskPath -like '*EdgeUpdate*' } | ForEach-Object {
+  try { Disable-ScheduledTask -InputObject $_ -ErrorAction Stop | Out-Null } catch { }
+}
+exit 0
+'''
+reset = '''
+Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskPath -like '*EdgeUpdate*' } | ForEach-Object {
+  try { Enable-ScheduledTask -InputObject $_ -ErrorAction Stop | Out-Null } catch { }
+}
+exit 0
+'''
+check = '''
+$tasks = @(Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskPath -like '*EdgeUpdate*' })
+if ($tasks.Count -eq 0) { exit 1 }
+$enabled = @($tasks | Where-Object { $_.State -ne 'Disabled' })
+if ($enabled.Count -eq 0) { exit 0 }
+if ($enabled.Count -eq $tasks.Count) { exit 1 }
+exit 2
+'''
+
+[[tweak]]
+id = "svc-remoteregistry-disabled"
+name = "Advanced: RemoteRegistry service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "RemoteRegistry"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-retaildemo-disabled"
+name = "Advanced: RetailDemo service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "RetailDemo"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-xblauthmanager-disabled"
+name = "Advanced: XblAuthManager service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "XblAuthManager"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-xblgamesave-disabled"
+name = "Advanced: XblGameSave service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "XblGameSave"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-xboxnetapisvc-disabled"
+name = "Advanced: XboxNetApiSvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "XboxNetApiSvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-phonesvc-disabled"
+name = "Advanced: PhoneSvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "PhoneSvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-tapisrv-disabled"
+name = "Advanced: TapiSrv service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "TapiSrv"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-pimsvc-disabled"
+name = "Advanced: pimsvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "pimsvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-pnrpsvc-disabled"
+name = "Advanced: PnrpSvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "PnrpSvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-lltdsvc-disabled"
+name = "Advanced: lltdsvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "lltdsvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-ssdpsrv-disabled"
+name = "Advanced: SSDPSRV service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "SSDPSRV"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-upnphost-disabled"
+name = "Advanced: upnphost service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "upnphost"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-browser-disabled"
+name = "Advanced: Browser service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "Browser"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-icssvc-disabled"
+name = "Advanced: icssvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "icssvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-wmpnetworksvc-disabled"
+name = "Advanced: WMPNetworkSvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "WMPNetworkSvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-semgrsvc-disabled"
+name = "Advanced: SEMgrSvc service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "SEMgrSvc"
+apply = "disabled"
+reset = "manual"
+
+[[tweak]]
+id = "svc-walletservice-disabled"
+name = "Advanced: WalletService service disabled"
+group = "advanced"
+preset = "min"
+
+[[tweak.action]]
+type = "service"
+name = "WalletService"
+apply = "disabled"
+reset = "manual"

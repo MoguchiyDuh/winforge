@@ -1,0 +1,139 @@
+meta = { id = "debloat-edge", title = "Edge / IE removal", description = "Forced Edge uninstall with profile deletion, app registration and Start menu client removal, IE11 optional feature removal, IE shortcuts removed. One-way: deleted profiles, files and removed features are not restored.", oneway = true }
+
+[[tweak]]
+id = "edge-uninstall"
+name = "Edge: forced uninstall + leftover cleanup"
+group = "Edge removal"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$ErrorActionPreference = 'Continue'
+foreach ($n in 'msedge','MicrosoftEdge','MicrosoftEdgeCP','MicrosoftEdgeSH','MicrosoftEdgeUpdate') {
+  Get-Process -Name $n -ErrorAction SilentlyContinue | ForEach-Object { try { Stop-Process -Id $_.Id -Force -ErrorAction Stop } catch { } }
+}
+$dirs = @(
+  "${env:ProgramFiles(x86)}\Microsoft\Edge",
+  "${env:ProgramFiles(x86)}\Microsoft\EdgeUpdate",
+  "${env:ProgramFiles(x86)}\Microsoft\EdgeCore",
+  "$env:ProgramFiles\Microsoft\Edge",
+  "$env:ProgramFiles\Microsoft\EdgeUpdate",
+  "$env:LOCALAPPDATA\Microsoft\Edge",
+  "$env:LOCALAPPDATA\Microsoft\EdgeUpdate"
+) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+$setup = $null
+foreach ($d in $dirs) {
+  $hit = Get-ChildItem -Path (Join-Path $d 'Application\*\Installer\setup.exe') -ErrorAction SilentlyContinue | Sort-Object FullName | Select-Object -Last 1
+  if ($hit) { $setup = $hit.FullName }
+}
+if ($setup) {
+  $stub = Join-Path $env:SystemRoot 'SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\MicrosoftEdge.exe'
+  try { New-Item -Path $stub -ItemType File -Force -ErrorAction Stop | Out-Null } catch { }
+  Start-Process -FilePath $setup -ArgumentList '--uninstall --system-level --force-uninstall --delete-profile' -Wait -ErrorAction SilentlyContinue
+}
+foreach ($n in 'msedge','MicrosoftEdge','MicrosoftEdgeCP','MicrosoftEdgeSH','MicrosoftEdgeUpdate') {
+  Get-Process -Name $n -ErrorAction SilentlyContinue | ForEach-Object { try { Stop-Process -Id $_.Id -Force -ErrorAction Stop } catch { } }
+}
+foreach ($d in $dirs) {
+  try { Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction Stop } catch { }
+}
+Write-Host 'edge removal pass complete'
+'''
+check = '''
+$dirs = @(
+  "${env:ProgramFiles(x86)}\Microsoft\Edge",
+  "${env:ProgramFiles(x86)}\Microsoft\EdgeUpdate",
+  "${env:ProgramFiles(x86)}\Microsoft\EdgeCore",
+  "$env:ProgramFiles\Microsoft\Edge",
+  "$env:ProgramFiles\Microsoft\EdgeUpdate",
+  "$env:LOCALAPPDATA\Microsoft\Edge",
+  "$env:LOCALAPPDATA\Microsoft\EdgeUpdate"
+) | Where-Object { $_ }
+$left = @($dirs | Where-Object { Test-Path -LiteralPath $_ })
+if ($left.Count -eq 0) { exit 0 }
+exit 1
+'''
+
+[[tweak]]
+id = "edge-registration"
+name = "Edge: drop app registration + Start menu client"
+group = "Edge removal"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$ra = 'HKLM:\SOFTWARE\RegisteredApplications'
+foreach ($n in 'Microsoft Edge','Microsoft Edge Dev','Microsoft Edge Beta') {
+  try { Remove-ItemProperty -LiteralPath $ra -Name $n -ErrorAction Stop | Out-Null } catch { }
+}
+foreach ($k in 'HKLM:\SOFTWARE\Clients\StartMenuInternet\Microsoft Edge','HKLM:\SOFTWARE\WOW6432Node\Clients\StartMenuInternet\Microsoft Edge') {
+  if (Test-Path -LiteralPath $k) {
+    try { Remove-Item -LiteralPath $k -Recurse -Force -ErrorAction Stop } catch { }
+  }
+}
+exit 0
+'''
+check = '''
+$edgeReg = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\RegisteredApplications' -Name 'Microsoft Edge' -ErrorAction SilentlyContinue).'Microsoft Edge'
+$sm1 = Test-Path -LiteralPath 'HKLM:\SOFTWARE\Clients\StartMenuInternet\Microsoft Edge'
+$sm2 = Test-Path -LiteralPath 'HKLM:\SOFTWARE\WOW6432Node\Clients\StartMenuInternet\Microsoft Edge'
+if (-not $edgeReg -and -not $sm1 -and -not $sm2) { exit 0 }
+exit 1
+'''
+
+[[tweak]]
+id = "ie-feature-remove"
+name = "IE: remove Internet-Explorer-Optional-amd64 feature"
+group = "Internet Explorer 11"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+try { Disable-WindowsOptionalFeature -Online -FeatureName 'Internet-Explorer-Optional-amd64' -Remove -NoRestart -ErrorAction Stop | Out-Null } catch { }
+exit 0
+'''
+check = '''
+try { $f = Get-WindowsOptionalFeature -Online -FeatureName 'Internet-Explorer-Optional-amd64' -ErrorAction Stop } catch { exit 2 }
+if ($f.State -eq 'Enabled') { exit 1 }
+if ($f.State -eq 'Disabled' -or $f.State -eq 'DisabledWithPayloadRemoved' -or $f.State -eq 'Absent') { exit 0 }
+exit 2
+'''
+
+[[tweak]]
+id = "ie-shortcuts"
+name = "IE: remove Start menu client + shortcuts"
+group = "Internet Explorer 11"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+foreach ($k in 'HKLM:\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE','HKLM:\SOFTWARE\WOW6432Node\Clients\StartMenuInternet\IEXPLORE.EXE') {
+  if (Test-Path -LiteralPath $k) {
+    try { Remove-Item -LiteralPath $k -Recurse -Force -ErrorAction Stop } catch { }
+  }
+}
+foreach ($l in @(
+  (Join-Path $env:PUBLIC 'Desktop\Internet Explorer.lnk'),
+  (Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\Internet Explorer.lnk'),
+  (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Accessories\Internet Explorer.lnk'),
+  (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Internet Explorer.lnk')
+)) {
+  if (Test-Path -LiteralPath $l) {
+    try { Remove-Item -LiteralPath $l -Force -ErrorAction Stop } catch { }
+  }
+}
+exit 0
+'''
+check = '''
+$k1 = Test-Path -LiteralPath 'HKLM:\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE'
+$k2 = Test-Path -LiteralPath 'HKLM:\SOFTWARE\WOW6432Node\Clients\StartMenuInternet\IEXPLORE.EXE'
+$paths = @(
+  (Join-Path $env:PUBLIC 'Desktop\Internet Explorer.lnk'),
+  (Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\Internet Explorer.lnk'),
+  (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Accessories\Internet Explorer.lnk'),
+  (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Internet Explorer.lnk')
+)
+$links = @($paths | Where-Object { Test-Path -LiteralPath $_ })
+if (-not $k1 -and -not $k2 -and $links.Count -eq 0) { exit 0 }
+exit 1
+'''

@@ -1,0 +1,319 @@
+meta = { id = "update-control", title = "Update control", description = "Feature and quality updates paused until 2038, no auto reboot with logged-on users, WU driver installs and Insider builds off, upgrade/restart nags off, app auto-restart after update off, Delivery Optimization P2P off, Edge updates blocked via EdgeUpdate keys, Media Player auto-update off; Defender definitions keep updating" }
+
+[[tweak]]
+id = "wu-pause-2038"
+name = "Updates: pause until 2038-01-19"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "FlightSettingsMaxPauseDays"
+regtype = "dword"
+apply = 5269
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "PauseFeatureUpdatesStartTime"
+regtype = "sz"
+apply = "2023-08-17T12:47:51Z"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "PauseFeatureUpdatesEndTime"
+regtype = "sz"
+apply = "2038-01-19T03:14:07Z"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "PauseQualityUpdatesStartTime"
+regtype = "sz"
+apply = "2023-08-17T12:47:51Z"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "PauseQualityUpdatesEndTime"
+regtype = "sz"
+apply = "2038-01-19T03:14:07Z"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "PauseUpdatesStartTime"
+regtype = "sz"
+apply = "2023-08-17T12:47:51Z"
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "PauseUpdatesExpiryTime"
+regtype = "sz"
+apply = "2038-01-19T03:14:07Z"
+reset = { delete = true }
+
+[[tweak]]
+id = "wu-no-auto-reboot"
+name = "Updates: no auto reboot with logged on users"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+name = "NoAutoRebootWithLoggedOnUsers"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "wu-drivers-off"
+name = "Updates: no driver installs from Windows Update"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\DriverSearching'
+name = "DontSearchWindowsUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\DriverSearching'
+name = "DriverUpdateWizardWuSearchEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\DriverSearching'
+name = "DontPromptForWindowsUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DriverSearching'
+name = "DontPromptForWindowsUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DriverSearching'
+name = "SearchOrderConfig"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
+name = "ExcludeWUDriversInQualityUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "ExcludeWUDriversInQualityUpdate"
+regtype = "dword"
+apply = 1
+reset = 0
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata'
+name = "PreventDeviceMetadataFromNetwork"
+regtype = "dword"
+apply = 1
+reset = 0
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Device Metadata'
+name = "PreventDeviceMetadataFromNetwork"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching'
+name = "SearchOrderConfig"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching'
+name = "DontSearchWindowsUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "wu-insider-off"
+name = "Updates: Insider preview builds off"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds'
+name = "AllowBuildPreview"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "wu-upgrade-nags-off"
+name = "Updates: upgrade and restart notifications off"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\Setup\UpgradeNotification'
+name = "UpgradeAvailable"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "HideMCTLink"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "RestartNotificationsAllowed2"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "wu-wmp-autoupdate-off"
+name = "Updates: Windows Media Player auto-update off"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer'
+name = "DisableAutoUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "delivery-optimization"
+name = "Telemetry: Delivery Optimization P2P off"
+group = "Delivery Optimization"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization'
+name = "DODownloadMode"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "edge-update-policy"
+name = "Edge: block update/redeploy via EdgeUpdate keys"
+group = "Edge removal"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\EdgeUpdate'
+name = "UpdateDefault"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\EdgeUpdate'
+name = "DoNotUpdateToEdgeWithChromium"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate'
+name = "UpdateDefault"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate'
+name = "DoNotUpdateToEdgeWithChromium"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate'
+name = "UpdateDefault"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate'
+name = "DoNotUpdateToEdgeWithChromium"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate'
+name = "CreateDesktopShortcutDefault"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "signin-restart-apps"
+name = "Sign-in: do not auto restart apps after update"
+group = "Windows Update"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows NT\CurrentVersion\Winlogon'
+name = "RestartApps"
+regtype = "dword"
+apply = 0
+reset = { delete = true }

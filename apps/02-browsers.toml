@@ -1,0 +1,13 @@
+meta = { id = "browsers", title = "Browsers" }
+
+[[app]]
+name = "Firefox"
+id = "Mozilla.Firefox"
+
+[[app]]
+name = "Helium"
+id = "ImputNet.Helium"
+
+[[app]]
+name = "Tor Browser"
+id = "TorProject.TorBrowser"
