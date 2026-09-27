@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::io::{self, BufRead, Write};
-use std::time::Duration;
+use std::sync::Arc;
+use std::sync::mpsc::{self, Receiver, TryRecvError};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use ratatui::backend::CrosstermBackend;
 use ratatui::layout::{Constraint, Layout, Rect};
@@ -25,6 +28,7 @@ use crate::sys;
 use crate::winget::{self, AppResult};
 
 const RESET: &str = "\x1b[0m";
+const STATUS_BUDGET: Duration = Duration::from_millis(120);
 
 type Tui = Terminal<CrosstermBackend<io::Stdout>>;
 
@@ -68,7 +72,7 @@ enum Hover {
 }
 
 struct App {
-    packs: Vec<Pack>,
+    packs: Arc<Vec<Pack>>,
     normal: Vec<usize>,
     oneway: Vec<usize>,
     groups: Vec<AppGroup>,
@@ -84,6 +88,8 @@ struct App {
     list_state: ListState,
     modal: Option<Modal>,
     should_quit: bool,
+    busy: Option<&'static str>,
+    job_rx: Option<Receiver<JobMsg>>,
     pending_apply: Option<Vec<Target>>,
     pending_reset: Option<Vec<Target>>,
     version: String,
@@ -108,6 +114,7 @@ pub fn run() {
         }
     };
     loop {
+        drain_job(&mut app);
         app.ensure_current_statuses();
         if terminal.draw(|frame| draw(frame, &mut app)).is_err() {
             break;
@@ -116,27 +123,144 @@ pub fn run() {
             Ok(ready) => ready,
             Err(_) => break,
         };
-        if !ready {
-            continue;
-        }
-        let ev = match event::read() {
-            Ok(ev) => ev,
-            Err(_) => break,
-        };
-        handle_event(&mut app, ev);
-        if app.should_quit {
-            break;
+        if ready {
+            let ev = match event::read() {
+                Ok(ev) => ev,
+                Err(_) => break,
+            };
+            handle_event(&mut app, ev);
+            if app.should_quit {
+                break;
+            }
         }
         if let Some(targets) = app.pending_apply.take() {
-            apply_targets(&app, &targets);
-            app.invalidate_statuses();
+            app.busy = Some("applying");
+            app.job_rx = Some(spawn_job(
+                Arc::clone(&app.packs),
+                Job::Apply { targets },
+            ));
         }
         if let Some(targets) = app.pending_reset.take() {
-            reset_targets(&app, &targets);
-            app.invalidate_statuses();
+            app.busy = Some("resetting");
+            app.job_rx = Some(spawn_job(
+                Arc::clone(&app.packs),
+                Job::Reset { targets },
+            ));
         }
     }
     let _ = suspend(&mut terminal);
+}
+
+enum Job {
+    Apply { targets: Vec<Target> },
+    Reset { targets: Vec<Target> },
+    Apps { apps: Vec<crate::schema::App> },
+}
+
+enum JobMsg {
+    AppResult { id: String, label: String },
+    Done,
+}
+
+fn spawn_job(packs: Arc<Vec<Pack>>, job: Job) -> Receiver<JobMsg> {
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        match job {
+            Job::Apply { targets } => {
+                for target in targets {
+                    let pack = &packs[target.pack];
+                    let report = engine::apply_tweaks(pack, &target.ids);
+                    sys::log(&format!(
+                        "apply {}: {} done, {} skipped, {} failed",
+                        pack.meta.id, report.done, report.skipped, report.failed
+                    ));
+                    for failure in &report.failures {
+                        sys::log(&format!("failed: {failure}"));
+                    }
+                }
+                run_refresh();
+            }
+            Job::Reset { targets } => {
+                for target in targets {
+                    let pack = &packs[target.pack];
+                    let report = engine::reset_tweaks(pack, &target.ids);
+                    sys::log(&format!(
+                        "reset {}: {} done, {} skipped, {} failed",
+                        pack.meta.id, report.done, report.skipped, report.failed
+                    ));
+                    for failure in &report.failures {
+                        sys::log(&format!("failed: {failure}"));
+                    }
+                }
+                run_refresh();
+            }
+            Job::Apps { apps } => {
+                if !winget::available() {
+                    sys::log("apps: winget not found; bootstrapping (needs internet)");
+                    if let Err(message) = winget::ensure() {
+                        sys::log(&format!(
+                            "apps: bootstrap failed: {message}; running forced repair"
+                        ));
+                    }
+                    if !winget::available() {
+                        if let Err(message) = winget::repair() {
+                            sys::log(&format!("apps: repair failed: {message}"));
+                        }
+                    }
+                }
+                if !winget::available() {
+                    sys::log("apps: winget is still unavailable");
+                }
+                for app in &apps {
+                    let label = match winget::install_app_quiet(app) {
+                        AppResult::Installed => String::from("installed"),
+                        AppResult::AlreadyPresent => String::from("already present"),
+                        AppResult::InstalledRebootRequired => {
+                            String::from("installed, reboot required")
+                        }
+                        AppResult::Failed(code) => format!("FAILED ({code})"),
+                    };
+                    sys::log(&format!("apps: {} ({}): {}", app.name, app.id, label));
+                    let _ = tx.send(JobMsg::AppResult {
+                        id: app.id.clone(),
+                        label,
+                    });
+                }
+            }
+        }
+        let _ = tx.send(JobMsg::Done);
+    });
+    return rx;
+}
+
+fn drain_job(app: &mut App) {
+    if app.job_rx.is_none() {
+        return;
+    }
+    loop {
+        let msg = {
+            let Some(rx) = app.job_rx.as_ref() else {
+                return;
+            };
+            rx.try_recv()
+        };
+        match msg {
+            Ok(JobMsg::AppResult { id, label }) => {
+                app.app_results.insert(id, label);
+            }
+            Ok(JobMsg::Done) | Err(TryRecvError::Disconnected) => {
+                app.busy = None;
+                app.job_rx = None;
+                app.invalidate_statuses();
+                app.winget_ready = None;
+                sys::log("job finished; rescanning statuses");
+                return;
+            }
+            Err(TryRecvError::Empty) => {
+                return;
+            }
+        }
+    }
 }
 
 impl App {
@@ -158,7 +282,7 @@ impl App {
             Err(_) => String::from("?"),
         };
         let mut app = App {
-            packs,
+            packs: Arc::new(packs),
             normal,
             oneway,
             groups: catalog::app_groups(),
@@ -174,6 +298,8 @@ impl App {
             list_state: ListState::default(),
             modal: None,
             should_quit: false,
+            busy: None,
+            job_rx: None,
             pending_apply: None,
             pending_reset: None,
             version: concat!("v", env!("CARGO_PKG_VERSION")).to_string(),
@@ -281,11 +407,22 @@ impl App {
     }
 
     fn load_status(&mut self, index: usize) {
+        let total = self.packs[index].tweak.len();
         let id = self.packs[index].meta.id.clone();
-        if self.statuses.contains_key(&id) {
+        let loaded = self.statuses.get(&id).map(Vec::len).unwrap_or(0);
+        if loaded >= total && self.statuses.contains_key(&id) {
             return;
         }
-        let statuses = engine::pack_status(&self.packs[index]);
+        let deadline = Instant::now() + STATUS_BUDGET;
+        let mut statuses = self.statuses.remove(&id).unwrap_or_default();
+        while statuses.len() < total {
+            let t = statuses.len();
+            let status = engine::single_status(&self.packs[index], t);
+            statuses.push(status);
+            if Instant::now() >= deadline {
+                break;
+            }
+        }
         self.statuses.insert(id, statuses);
     }
 
@@ -314,7 +451,7 @@ impl App {
         }
         let next = (self.sidebar_cursor as i64 + delta as i64).clamp(0, len as i64 - 1) as usize;
         self.sidebar_cursor = next;
-        self.sidebar_state.select(Some(next));
+        self.set_screen(self.sidebar_to_screen(next));
     }
 
     fn move_cursor(&mut self, delta: i32) {
@@ -458,63 +595,32 @@ impl App {
     }
 
     fn apps_install(&mut self) {
-        if self.winget_ready != Some(true) {
-            sys::log("apps: winget not found; bootstrapping (needs internet)");
-            if let Err(message) = winget::ensure() {
-                sys::log(&format!(
-                    "apps: bootstrap failed: {message}; running forced repair"
-                ));
-            }
-            if !winget::available() {
-                if let Err(message) = winget::repair() {
-                    sys::log(&format!("apps: repair failed: {message}"));
-                }
-            }
-            let ready = winget::available();
-            self.winget_ready = Some(ready);
-            if !ready {
-                sys::log("apps: winget is still unavailable");
-                return;
-            }
-        }
-        let mut targets: Vec<(usize, usize)> = Vec::new();
+        let mut apps: Vec<crate::schema::App> = Vec::new();
         let selected = self.selection.ids();
-        for (g, group) in self.groups.iter().enumerate() {
-            for (a, app) in group.app.iter().enumerate() {
+        for group in &self.groups {
+            for app in &group.app {
                 if selected.contains(&app.id) {
-                    targets.push((g, a));
+                    apps.push(app.clone());
                 }
             }
         }
-        if targets.is_empty() {
+        if apps.is_empty() {
             let rows = self.rows();
-            let hovered_app = match rows.get(self.cursor) {
-                Some(Row::AppEntry(g, a)) => Some((*g, *a)),
+            let hovered = match rows.get(self.cursor) {
+                Some(Row::AppEntry(g, a)) => Some(self.groups[*g].app[*a].clone()),
                 _ => None,
             };
-            match hovered_app {
-                Some(target) => targets.push(target),
+            match hovered {
+                Some(app) => apps.push(app),
                 None => {
                     sys::log("apps: nothing selected to install");
                     return;
                 }
             }
         }
-        for (g, a) in &targets {
-            let (name, id) = {
-                let app = &self.groups[*g].app[*a];
-                (app.name.clone(), app.id.clone())
-            };
-            let app = &self.groups[*g].app[*a];
-            let label = match winget::install_app_quiet(app) {
-                AppResult::Installed => String::from("installed"),
-                AppResult::AlreadyPresent => String::from("already present"),
-                AppResult::InstalledRebootRequired => String::from("installed, reboot required"),
-                AppResult::Failed(code) => format!("FAILED ({code})"),
-            };
-            self.app_results.insert(id.clone(), label.clone());
-            sys::log(&format!("apps: {name} ({id}): {label}"));
-        }
+        self.winget_ready = None;
+        self.busy = Some("installing");
+        self.job_rx = Some(spawn_job(Arc::clone(&self.packs), Job::Apps { apps }));
     }
 }
 
@@ -561,6 +667,34 @@ fn handle_modal_key(app: &mut App, code: KeyCode) {
 }
 
 fn handle_key(app: &mut App, code: KeyCode) {
+    if app.busy.is_some() {
+        match code {
+            KeyCode::Char('h') | KeyCode::Left => {
+                if app.focus == Focus::List {
+                    app.focus_sidebar();
+                }
+            }
+            KeyCode::Char('l') | KeyCode::Right => {
+                if app.focus == Focus::Sidebar {
+                    app.focus_list();
+                }
+            }
+            KeyCode::Tab => match app.focus {
+                Focus::Sidebar => app.focus_list(),
+                Focus::List => app.focus_sidebar(),
+            },
+            KeyCode::Char('j') | KeyCode::Down => match app.focus {
+                Focus::Sidebar => app.move_sidebar_cursor(1),
+                Focus::List => app.move_cursor(1),
+            },
+            KeyCode::Char('k') | KeyCode::Up => match app.focus {
+                Focus::Sidebar => app.move_sidebar_cursor(-1),
+                Focus::List => app.move_cursor(-1),
+            },
+            _ => {}
+        }
+        return;
+    }
     match code {
         KeyCode::Char('h') | KeyCode::Left => {
             if app.focus == Focus::List {
@@ -601,50 +735,20 @@ fn handle_key(app: &mut App, code: KeyCode) {
         }
         KeyCode::Char('1') => {
             let packs = &app.packs;
-            app.selection.apply_preset(packs, Tier::Min);
+            app.selection.apply_preset(packs, Tier::Min, true);
         }
         KeyCode::Char('2') => {
             let packs = &app.packs;
-            app.selection.apply_preset(packs, Tier::Std);
+            app.selection.apply_preset(packs, Tier::Std, true);
         }
         KeyCode::Char('3') => {
             let packs = &app.packs;
-            app.selection.apply_preset(packs, Tier::Max);
+            app.selection.apply_preset(packs, Tier::Max, true);
         }
         KeyCode::Char('u') => app.request_reset(),
         KeyCode::Char('q') | KeyCode::Esc => app.request_quit(),
         _ => {}
     }
-}
-
-fn apply_targets(app: &App, targets: &[Target]) {
-    for target in targets {
-        let pack = &app.packs[target.pack];
-        let report = engine::apply_tweaks(pack, &target.ids);
-        sys::log(&format!(
-            "apply {}: {} done, {} skipped, {} failed",
-            pack.meta.id, report.done, report.skipped, report.failed
-        ));
-        for failure in &report.failures {
-            sys::log(&format!("failed: {failure}"));
-        }
-    }
-    run_refresh();
-}
-
-fn reset_targets(app: &App, targets: &[Target]) {
-    for target in targets {
-        let pack = &app.packs[target.pack];
-        let report = engine::reset_tweaks(pack, &target.ids);
-        sys::log(&format!(
-            "reset {}: {} done, {} skipped, {} failed",
-            pack.meta.id, report.done, report.skipped, report.failed
-        ));
-        for failure in &report.failures {
-            sys::log(&format!("failed: {failure}"));
-        }
-    }
-    run_refresh();
 }
 
 fn create_terminal() -> io::Result<Tui> {
@@ -684,7 +788,7 @@ fn draw(frame: &mut Frame, app: &mut App) {
         ),
     }
     draw_log(frame, root[2]);
-    draw_footer(frame, root[3], app.modal.is_some());
+    draw_footer(frame, root[3], app.modal.is_some(), app.busy);
     if let Some(modal) = &app.modal {
         let selected = app.selection.ids().len();
         draw_modal(frame, frame.area(), modal, selected);
@@ -745,7 +849,7 @@ fn draw_sidebar(frame: &mut Frame, area: Rect, app: &mut App) {
             .bg(Color::Blue)
             .add_modifier(Modifier::BOLD)
     } else {
-        Style::default().bg(Color::DarkGray)
+        Style::default()
     };
     let border = if matches!(app.focus, Focus::Sidebar) {
         Style::default().fg(Color::Cyan)
@@ -897,18 +1001,22 @@ fn draw_console_placeholder(frame: &mut Frame, area: Rect, title: &str, hint: &s
     frame.render_widget(Paragraph::new(text).block(Block::bordered()), area);
 }
 
-fn draw_footer(frame: &mut Frame, area: Rect, modal: bool) {
-    let text = if modal {
+fn draw_footer(frame: &mut Frame, area: Rect, modal: bool, busy: Option<&'static str>) {
+    let text = if let Some(label) = busy {
+        format!("working: {label}")
+    } else if modal {
         String::from("y = confirm  n/Esc = cancel")
     } else {
         String::from(
             "h/l focus pane  j/k move  space toggle  a/A select all  x/X clear  1/2/3 preset  enter apply  u undo  q quit",
         )
     };
-    frame.render_widget(
-        Paragraph::new(Span::styled(text, Style::default().fg(Color::DarkGray))),
-        area,
-    );
+    let style = if busy.is_some() {
+        Style::default().fg(Color::Yellow)
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+    frame.render_widget(Paragraph::new(Span::styled(text, style)), area);
 }
 
 fn draw_modal(frame: &mut Frame, area: Rect, modal: &Modal, selected: usize) {
@@ -986,27 +1094,38 @@ fn pack_title(app: &App, p: usize) -> Line<'static> {
             .fg(Color::Cyan)
             .add_modifier(Modifier::BOLD),
     )];
-    if let Some(statuses) = app.statuses.get(&pack.meta.id) {
-        let summary = engine::summarize(statuses);
-        spans.push(Span::raw(format!(
-            "  applied {}/{}",
-            summary.applied, summary.total
-        )));
-        let letters = [
-            Status::Applied,
-            Status::Default,
-            Status::Mixed,
-            Status::Unknown,
-            Status::Absent,
-        ];
-        for (count, status) in summary.counts.iter().zip(letters) {
-            let (letter, color) = status_letter(status);
-            spans.push(Span::raw(" "));
-            spans.push(Span::styled(
-                format!("{letter}{count}"),
-                Style::default().fg(color),
-            ));
+    let total = pack.tweak.len();
+    match app.statuses.get(&pack.meta.id) {
+        Some(statuses) if statuses.len() >= total => {
+            let summary = engine::summarize(statuses);
+            spans.push(Span::raw(format!(
+                "  applied {}/{}",
+                summary.applied, summary.total
+            )));
+            let letters = [
+                Status::Applied,
+                Status::Default,
+                Status::Mixed,
+                Status::Unknown,
+                Status::Absent,
+            ];
+            for (count, status) in summary.counts.iter().zip(letters) {
+                let (letter, color) = status_letter(status);
+                spans.push(Span::raw(" "));
+                spans.push(Span::styled(
+                    format!("{letter}{count}"),
+                    Style::default().fg(color),
+                ));
+            }
         }
+        Some(statuses) => spans.push(Span::styled(
+            format!("  loading {}/{}", statuses.len(), total),
+            Style::default().fg(Color::Yellow),
+        )),
+        None => spans.push(Span::styled(
+            format!("  loading 0/{total}"),
+            Style::default().fg(Color::Yellow),
+        )),
     }
     return Line::from(spans);
 }
@@ -1063,27 +1182,19 @@ fn run_refresh() {
     let Some(script) = catalog::script("refresh.ps1") else {
         return;
     };
-    println!("{}", dim("running refresh..."));
+    sys::log("running refresh.ps1...");
     match sys::run_script(script, sys::TIMEOUT_SCRIPT) {
         Ok(out) if out.status.success() => {
             sys::log("refresh.ps1 done");
         }
         Ok(out) => {
-            sys::log(&format!(
-                "refresh.ps1 exit {}",
-                out.status.code().unwrap_or(-1)
-            ));
-            println!(
-                "{}",
-                warn(&format!(
-                    "winforge: refresh exited {}",
-                    out.status.code().unwrap_or(-1)
-                ))
-            );
+            let code = out.status.code().unwrap_or(-1);
+            sys::log(&format!("refresh.ps1 exit {code}"));
+            sys::log(&format!("winforge: refresh exited {code}"));
         }
         Err(err) => {
             sys::log(&format!("refresh.ps1 failed: {err}"));
-            println!("{}", warn(&format!("winforge: refresh failed: {err}")));
+            sys::log(&format!("winforge: refresh failed: {err}"));
         }
     }
 }

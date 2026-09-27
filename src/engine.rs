@@ -85,13 +85,8 @@ pub fn tweak_statuses(pack: &Pack) -> Vec<(&Tweak, Status)> {
         .collect();
 }
 
-pub fn pack_status(pack: &Pack) -> Vec<Status> {
-    let oneway = pack.meta.oneway();
-    return pack
-        .tweak
-        .iter()
-        .map(|tweak| tweak_status(tweak, oneway))
-        .collect();
+pub fn single_status(pack: &Pack, tweak_index: usize) -> Status {
+    return tweak_status(&pack.tweak[tweak_index], pack.meta.oneway());
 }
 
 fn tweak_status(tweak: &Tweak, oneway: bool) -> Status {

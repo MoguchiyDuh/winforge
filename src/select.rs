@@ -76,7 +76,7 @@ impl Selection {
         }
     }
 
-    pub fn apply_preset(&mut self, packs: &[Pack], tier: Tier) {
+    pub fn apply_preset(&mut self, packs: &[Pack], tier: Tier, replace: bool) {
         for pack in packs {
             if pack.meta.oneway() {
                 continue;
@@ -90,8 +90,8 @@ impl Selection {
                         Some(Preset::Min) | Some(Preset::Std) | Some(Preset::Max)
                     ),
                 };
-                if wanted {
-                    self.select_tweak(&tweak.id, true);
+                if replace || wanted {
+                    self.select_tweak(&tweak.id, wanted);
                 }
             }
         }

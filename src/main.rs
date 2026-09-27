@@ -193,7 +193,7 @@ fn resolve_selection(packs: &[Pack], cli: &Cli) -> Result<Selection, String> {
         return Err(format!("unknown tweak or pack '{spec}'"));
     }
     if let Some(tier) = cli.preset {
-        selection.apply_preset(packs, tier);
+        selection.apply_preset(packs, tier, false);
     }
     return Ok(selection);
 }
