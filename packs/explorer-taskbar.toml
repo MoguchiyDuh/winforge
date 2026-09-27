@@ -1,4 +1,4 @@
-meta = { id = "explorer-taskbar", title = "Explorer and Taskbar", description = "File Explorer view and launch defaults, recent files and sync-provider ads off, folder group-by none, context-menu bloat blocked and New submenu trimmed, taskbar buttons and tray set, AutoPlay and autorun off, Snap Assist off, thumbnail cache kept, NumLock on at boot, Sticky Keys popup off, keyboard at repeat floor, clipboard history on, first-logon animation off, taskbar search box hidden" }
+meta = { id = "explorer-taskbar", title = "Explorer and Taskbar", description = "File Explorer view and launch defaults, recent files and sync-provider ads off, folder group-by none, context-menu bloat blocked, New submenu trimmed to folder/text/shortcut, Send to cleaned of fax and mail, taskbar buttons set, AutoPlay and autorun off, Snap Assist off, thumbnail cache kept, Sticky Keys popup off, keyboard at repeat floor, clipboard history on, first-logon animation off" }
 
 [[tweak]]
 id = "explorer-view"
@@ -239,16 +239,26 @@ reset = { delete = true }
 
 [[tweak]]
 id = "context-menu-new"
-name = "Context menu: remove New submenu entries"
+name = "Context menu: New submenu - only folder, text file, shortcut"
 group = "Context menu"
 preset = "std"
 
 [[tweak.action]]
 type = "command"
 apply = '''
-foreach ($t in @('.bmp', '.contact', '.library-ms', '.rtf')) {
-    $k = 'HKLM:\SOFTWARE\Classes\' + $t + '\ShellNew'
+$keep = @('\.txt\', '\.lnk\', '\Directory\')
+$targets = @()
+$lines = reg query HKCR /f ShellNew /k /s 2>$null | Select-String 'HKEY_CLASSES_ROOT'
+foreach ($l in $lines) {
+    $p = $l.ToString().Trim()
+    if ($p -match '\\\.txt\\ShellNew$' -or $p -match '\\\.lnk\\ShellNew$' -or $p -match '\\Directory\\ShellNew') { continue }
+    $targets += $p
+}
+foreach ($p in $targets) {
+    $k = $p -replace '^HKEY_CLASSES_ROOT', 'HKLM:\SOFTWARE\Classes'
     if (Test-Path -LiteralPath $k) { Remove-Item -LiteralPath $k -Recurse -Force -ErrorAction SilentlyContinue }
+    $u = $p -replace '^HKEY_CLASSES_ROOT', 'HKCU:\Software\Classes'
+    if (Test-Path -LiteralPath $u) { Remove-Item -LiteralPath $u -Recurse -Force -ErrorAction SilentlyContinue }
 }
 exit 0
 '''
@@ -258,60 +268,71 @@ $types = @{
     '.rtf'        = @{ Data = '{\rtf1}'; ItemName = '@C:\Program Files\Windows NT\Accessories\WORDPAD.EXE,-213' }
     '.contact'    = @{ command = '"C:\Program Files\Windows Mail\Wab.exe" /CreateContact "%1"'; iconpath = 'C:\Program Files\Windows Mail\wab.exe,1'; MenuText = '@C:\Program Files\Common Files\system\wab32res.dll,-10203' }
     '.library-ms' = @{ Handler = '{c7ca6167-2f46-4c4c-98b2-c92591368971}'; IconPath = 'C:\Windows\System32\imageres.dll,-1001'; NullFile = '' }
+    '.zip'        = @{ Data = [byte[]](0x50, 0x4B, 0x05, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00) }
 }
 foreach ($t in $types.Keys) {
     $p = 'HKLM:\SOFTWARE\Classes\' + $t + '\ShellNew'
     New-Item -Path $p -Force -ErrorAction SilentlyContinue | Out-Null
     foreach ($name in $types[$t].Keys) {
         $v = $types[$t][$name]
-        if ($name -eq 'Data') {
-            New-ItemProperty -LiteralPath $p -Name $name -Value ([byte[]][char[]]$v) -PropertyType Binary -Force -ErrorAction SilentlyContinue | Out-Null
+        if ($name -eq 'Data' -or $v -is [byte[]]) {
+            New-ItemProperty -LiteralPath $p -Name $name -Value ([byte[]]$v) -PropertyType Binary -Force -ErrorAction SilentlyContinue | Out-Null
         } else {
             New-ItemProperty -LiteralPath $p -Name $name -Value $v -PropertyType String -Force -ErrorAction SilentlyContinue | Out-Null
         }
     }
 }
+$txt = 'HKLM:\SOFTWARE\Classes\.txt\ShellNew'
+if (-not (Test-Path -LiteralPath $txt)) {
+    New-Item -Path $txt -Force -ErrorAction SilentlyContinue | Out-Null
+    New-ItemProperty -LiteralPath $txt -Name 'NullFile' -Value '' -PropertyType String -Force -ErrorAction SilentlyContinue | Out-Null
+}
 exit 0
 '''
 check = '''
 $found = 0
-foreach ($t in @('.bmp', '.contact', '.library-ms', '.rtf')) {
-    if (Test-Path -LiteralPath ('HKLM:\SOFTWARE\Classes\' + $t + '\ShellNew')) { $found++ }
+$lines = reg query HKCR /f ShellNew /k /s 2>$null | Select-String 'HKEY_CLASSES_ROOT'
+foreach ($l in $lines) {
+    $p = $l.ToString().Trim()
+    if ($p -match '\\\.txt\\ShellNew$' -or $p -match '\\\.lnk\\ShellNew$' -or $p -match '\\Directory\\ShellNew') { continue }
+    $found++
 }
 if ($found -eq 0) { exit 0 }
-if ($found -eq 4) { exit 1 }
+if ($found -ge 4) { exit 1 }
 exit 2
 '''
 
+
 [[tweak]]
-id = "taskbar-buttons"
-name = "Taskbar: Task View, People, Ink buttons off"
-group = "Taskbar"
+id = "context-menu-sendto"
+name = "Context menu: Send to - no fax, no mail recipient"
+group = "Context menu"
 preset = "std"
 
 [[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-name = "ShowTaskViewButton"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-name = "PeopleBand"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-name = "ShowWindowsInkWorkspaceButton"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
+type = "command"
+apply = '''
+$sf = Join-Path $env:APPDATA 'Microsoft\Windows\SendTo'
+Get-ChildItem -LiteralPath $sf -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match 'fax' -or $_.Name -like '*MAPIMail' -or $_.Name -like 'Mail Recipient*' } |
+    Remove-Item -Force -ErrorAction SilentlyContinue
+exit 0
+'''
+reset = '''
+$sf = Join-Path $env:APPDATA 'Microsoft\Windows\SendTo'
+$mail = Join-Path $sf 'Mail Recipient.MAPIMail'
+if (-not (Test-Path -LiteralPath $mail)) {
+    New-Item -ItemType File -Path $mail -Force -ErrorAction SilentlyContinue | Out-Null
+}
+exit 0
+'''
+check = '''
+$sf = Join-Path $env:APPDATA 'Microsoft\Windows\SendTo'
+$found = Get-ChildItem -LiteralPath $sf -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match 'fax' -or $_.Name -like '*MAPIMail' -or $_.Name -like 'Mail Recipient*' }
+if (-not $found) { exit 0 }
+exit 1
+'''
 
 [[tweak]]
 id = "taskbar-grouping"
@@ -335,31 +356,10 @@ regtype = "dword"
 apply = 0
 reset = { delete = true }
 
-[[tweak]]
-id = "taskbar-tray"
-name = "Taskbar: always show tray icons (auto-tray off)"
-group = "Taskbar"
-preset = "std"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-name = "EnableAutoTray"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer'
-name = "EnableAutoTray"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
 
 [[tweak]]
-id = "shell-polish"
-name = "Shell polish: Meet Now, Cortana button, shake off"
+id = "taskbar-icon-clutter"
+name = "Shell polish: Meet Now and Cortana buttons off"
 group = "Shell polish"
 preset = "std"
 
@@ -378,6 +378,12 @@ name = "ShowCortanaButton"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
+
+[[tweak]]
+id = "shake-off"
+name = "Shell polish: shake-to-minimize off"
+group = "Shell polish"
+preset = "std"
 
 [[tweak.action]]
 type = "registry"
@@ -467,19 +473,6 @@ regtype = "dword"
 apply = 0
 reset = 1
 
-[[tweak]]
-id = "numlock-at-boot"
-name = "Sign-in: NumLock on at boot screen"
-group = "Filesystem and sign-in polish"
-preset = "std"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKU\.DEFAULT\Control Panel\Keyboard'
-name = "InitialKeyboardIndicators"
-regtype = "sz"
-apply = "2147483650"
-reset = { delete = true }
 
 [[tweak]]
 id = "sticky-keys"
@@ -495,27 +488,6 @@ regtype = "sz"
 apply = "506"
 reset = "510"
 
-[[tweak]]
-id = "keyboard"
-name = "Input: keyboard repeat at GUI floor"
-group = "Keyboard"
-preset = "std"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Keyboard'
-name = "KeyboardDelay"
-regtype = "sz"
-apply = "0"
-reset = "1"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Keyboard'
-name = "KeyboardSpeed"
-regtype = "sz"
-apply = "31"
-reset = "31"
 
 [[tweak]]
 id = "clipboard-history"
@@ -563,7 +535,7 @@ reset = { delete = true }
 
 [[tweak]]
 id = "cortana-search-policy"
-name = "Cortana: policy kill + hide taskbar search"
+name = "Cortana: policy kill"
 group = "Cortana and web search"
 preset = "std"
 
@@ -626,22 +598,6 @@ reset = { delete = true }
 [[tweak.action]]
 type = "registry"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
-name = "ConfigureSearchOnTaskbarMode"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
-name = "SearchOnTaskbarMode"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 name = "EnableDynamicContentInWSB"
 regtype = "dword"
 apply = 0
@@ -654,3 +610,5 @@ name = "AllowInputPersonalization"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
+
+

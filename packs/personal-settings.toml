@@ -1,50 +1,4 @@
-meta = { id = "look-and-feel", title = "Look and feel", description = "Dark theme with Iris Pastel accent 8764B8, transparency on, pure black desktop and lock-screen wallpaper with theme file patch, Windows Black cursor scheme, mouse acceleration off, all shell animations off" }
-
-[[tweak]]
-id = "dark-theme"
-name = "Appearance: dark theme, no auto colorization"
-group = "Dark theme and accent"
-preset = "manual"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
-name = "AppsUseLightTheme"
-regtype = "dword"
-apply = 0
-reset = 1
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
-name = "SystemUsesLightTheme"
-regtype = "dword"
-apply = 0
-reset = 1
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
-name = "ColorPrevalence"
-regtype = "dword"
-apply = 1
-reset = 0
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Desktop'
-name = "AutoColorization"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\DWM'
-name = "ColorPrevalence"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
+meta = { id = "personal-settings", title = "Personal settings", description = "Kirill personal identity settings, hand-picked only, never in profiles: Iris Pastel accent, pure black wallpaper on desktop and lock screen with theme-file patch, mouse at speed 7 with acceleration off, NumLock on at boot, keyboard at repeat floor" }
 
 [[tweak]]
 id = "accent-iris"
@@ -141,20 +95,6 @@ apply = 1
 reset = 0
 
 [[tweak]]
-id = "transparency-on"
-name = "Appearance: transparency effects on"
-group = "Dark theme and accent"
-preset = "manual"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
-name = "EnableTransparency"
-regtype = "dword"
-apply = 1
-reset = 1
-
-[[tweak]]
 id = "wallpaper-black"
 name = "Appearance: pure black wallpaper desktop + lock"
 group = "Black wallpaper"
@@ -235,156 +175,6 @@ exit 2
 '''
 
 [[tweak]]
-id = "cursor-black"
-name = "Appearance: Windows Black cursor scheme"
-group = "Cursor"
-preset = "manual"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "Scheme Source"
-regtype = "dword"
-apply = 2
-reset = 0
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = ""
-regtype = "sz"
-apply = "Windows Black"
-reset = "Windows Default (system scheme)"
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "Arrow"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\arrow_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "Help"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\help_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "AppStarting"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\wait_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "Wait"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\busy_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "IBeam"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\beam_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "NWPen"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\pen_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "No"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\no_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "SizeNS"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\size4_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "SizeWE"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\size3_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "SizeNWSE"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\size2_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "SizeNESW"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\size1_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "SizeAll"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\move_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "UpArrow"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\up_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "Pin"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\pin_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "Person"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\person_r.cur'
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Control Panel\Cursors'
-name = "Crosshair"
-regtype = "expandsz"
-apply = '%SystemRoot%\cursors\cross_r.cur'
-reset = { delete = true }
-
-[[tweak]]
 id = "mouse"
 name = "Input: mouse speed 7, acceleration off"
 group = "Mouse"
@@ -431,40 +221,38 @@ apply = "0"
 reset = "0"
 
 [[tweak]]
-id = "animations-off"
-name = "Appearance: all shell animations off"
-group = "Animations"
+id = "numlock-at-boot"
+name = "Sign-in: NumLock on at boot screen"
+group = "Filesystem and sign-in polish"
 preset = "manual"
-desc = "turns off window minimize/maximize animation, taskbar animations and Aero Peek (custom visual effects preset; reset restores stock animation values)"
 
 [[tweak.action]]
 type = "registry"
-path = 'HKCU\Control Panel\Desktop\WindowMetrics'
-name = "MinAnimate"
+path = 'HKU\.DEFAULT\Control Panel\Keyboard'
+name = "InitialKeyboardIndicators"
 regtype = "sz"
-apply = '0'
-reset = '1'
+apply = "2147483650"
+reset = { delete = true }
+
+[[tweak]]
+id = "keyboard"
+name = "Input: keyboard repeat at GUI floor"
+group = "Keyboard"
+preset = "manual"
 
 [[tweak.action]]
 type = "registry"
-path = 'HKCU\Control Panel\Desktop'
-name = "UserPreferencesMask"
-regtype = "binary"
-apply = [144, 18, 3, 128, 16, 0, 0, 0]
-reset = [158, 62, 7, 128, 18, 0, 0, 0]
+path = 'HKCU\Control Panel\Keyboard'
+name = "KeyboardDelay"
+regtype = "sz"
+apply = "0"
+reset = "1"
 
 [[tweak.action]]
 type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-name = "TaskbarAnimations"
-regtype = "dword"
-apply = 0
-reset = 1
+path = 'HKCU\Control Panel\Keyboard'
+name = "KeyboardSpeed"
+regtype = "sz"
+apply = "31"
+reset = "31"
 
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\DWM'
-name = "EnableAeroPeek"
-regtype = "dword"
-apply = 0
-reset = 1

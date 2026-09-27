@@ -537,7 +537,7 @@ reset = { delete = true }
 
 [[tweak]]
 id = "cortana-user-search"
-name = "Cortana: per-user Bing/consent/location off, taskbar search hidden"
+name = "Cortana: per-user Bing/consent/location off"
 group = "Cortana and web search"
 preset = "min"
 
@@ -545,14 +545,6 @@ preset = "min"
 type = "registry"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
 name = "BingSearchEnabled"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
-name = "SearchboxTaskbarMode"
 regtype = "dword"
 apply = 0
 reset = { delete = true }

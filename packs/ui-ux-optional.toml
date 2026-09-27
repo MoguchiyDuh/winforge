@@ -1,0 +1,333 @@
+meta = { id = "ui-ux-optional", title = "Optional UI/UX", description = "Optional look and taskbar cosmetics, hand-picked only, never in profiles: dark theme, Windows Black cursor scheme, transparency effects, all shell animations off, taskbar search box hidden, Task View / People / Ink workspace buttons off, tray icons always shown" }
+
+[[tweak]]
+id = "dark-theme"
+name = "Appearance: dark theme, no auto colorization"
+group = "Dark theme and accent"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "AppsUseLightTheme"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "SystemUsesLightTheme"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "ColorPrevalence"
+regtype = "dword"
+apply = 1
+reset = 0
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "AutoColorization"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorPrevalence"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "transparency-on"
+name = "Appearance: transparency effects on"
+group = "Dark theme and accent"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+name = "EnableTransparency"
+regtype = "dword"
+apply = 1
+reset = 1
+
+[[tweak]]
+id = "cursor-black"
+name = "Appearance: Windows Black cursor scheme"
+group = "Cursor"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Scheme Source"
+regtype = "dword"
+apply = 2
+reset = 0
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = ""
+regtype = "sz"
+apply = "Windows Black"
+reset = "Windows Default (system scheme)"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Arrow"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\arrow_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Help"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\help_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "AppStarting"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\wait_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Wait"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\busy_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "IBeam"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\beam_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "NWPen"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\pen_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "No"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\no_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeNS"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size4_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeWE"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size3_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeNWSE"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size2_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeNESW"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\size1_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "SizeAll"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\move_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "UpArrow"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\up_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Pin"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\pin_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Person"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\person_r.cur'
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Cursors'
+name = "Crosshair"
+regtype = "expandsz"
+apply = '%SystemRoot%\cursors\cross_r.cur'
+reset = { delete = true }
+
+[[tweak]]
+id = "animations-off"
+name = "Appearance: all shell animations off"
+group = "Animations"
+preset = "manual"
+desc = "turns off window minimize/maximize animation, taskbar animations and Aero Peek (custom visual effects preset; reset restores stock animation values)"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop\WindowMetrics'
+name = "MinAnimate"
+regtype = "sz"
+apply = '0'
+reset = '1'
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Control Panel\Desktop'
+name = "UserPreferencesMask"
+regtype = "binary"
+apply = [144, 18, 3, 128, 16, 0, 0, 0]
+reset = [158, 62, 7, 128, 18, 0, 0, 0]
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarAnimations"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "EnableAeroPeek"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak]]
+id = "taskbar-search-box"
+name = "Taskbar: hide search box"
+group = "Taskbar"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "ConfigureSearchOnTaskbarMode"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
+name = "SearchOnTaskbarMode"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
+name = "SearchboxTaskbarMode"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "taskbar-buttons"
+name = "Taskbar: Task View, People, Ink buttons off"
+group = "Taskbar"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowTaskViewButton"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "PeopleBand"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowWindowsInkWorkspaceButton"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "taskbar-tray"
+name = "Taskbar: always show tray icons (auto-tray off)"
+group = "Taskbar"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "EnableAutoTray"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer'
+name = "EnableAutoTray"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
