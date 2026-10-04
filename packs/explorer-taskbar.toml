@@ -12,7 +12,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "Hidden"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 2
 
 [[tweak.action]]
 type = "registry"
@@ -20,7 +20,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "ShowSuperHidden"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 0
 
 [[tweak.action]]
 type = "registry"
@@ -28,7 +28,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "HideFileExt"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -90,7 +90,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "DontPrettyPath"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 0
 
 [[tweak]]
 id = "group-by-none"
@@ -275,7 +275,7 @@ foreach ($t in $types.Keys) {
     New-Item -Path $p -Force -ErrorAction SilentlyContinue | Out-Null
     foreach ($name in $types[$t].Keys) {
         $v = $types[$t][$name]
-        if ($name -eq 'Data' -or $v -is [byte[]]) {
+        if ($v -is [byte[]]) {
             New-ItemProperty -LiteralPath $p -Name $name -Value ([byte[]]$v) -PropertyType Binary -Force -ErrorAction SilentlyContinue | Out-Null
         } else {
             New-ItemProperty -LiteralPath $p -Name $name -Value $v -PropertyType String -Force -ErrorAction SilentlyContinue | Out-Null
@@ -295,6 +295,7 @@ $lines = reg query HKCR /f ShellNew /k /s 2>$null | Select-String 'HKEY_CLASSES_
 foreach ($l in $lines) {
     $p = $l.ToString().Trim()
     if ($p -match '\\\.txt\\ShellNew$' -or $p -match '\\\.lnk\\ShellNew$' -or $p -match '\\Directory\\ShellNew') { continue }
+    if ($p -match '\\CLSID\\') { continue }
     $found++
 }
 if ($found -eq 0) { exit 0 }
@@ -339,6 +340,7 @@ id = "taskbar-grouping"
 name = "Taskbar: combine buttons, no secondary glom"
 group = "Taskbar"
 preset = "std"
+os = "10"
 
 [[tweak.action]]
 type = "registry"
@@ -365,6 +367,7 @@ preset = "std"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "HideSCAMeetNow"
 regtype = "dword"
@@ -373,8 +376,27 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "ShowCortanaButton"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarMn"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarDa"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
@@ -405,7 +427,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers
 name = "DisableAutoplay"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 0
 
 [[tweak]]
 id = "autorun-off"
@@ -415,11 +437,21 @@ preset = "std"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer'
 name = "NoDriveTypeAutoRun"
 regtype = "dword"
 apply = 255
 reset = 145
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer'
+name = "NoDriveTypeAutoRun"
+regtype = "dword"
+apply = 255
+reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
@@ -459,6 +491,7 @@ preset = "std"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache'
 name = "Autorun"
 regtype = "dword"
@@ -467,11 +500,30 @@ reset = 1
 
 [[tweak.action]]
 type = "registry"
+os = "11"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache'
+name = "Autorun"
+regtype = "dword"
+apply = 0
+reset = 3
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache'
 name = "Autorun"
 regtype = "dword"
 apply = 0
 reset = 1
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache'
+name = "Autorun"
+regtype = "dword"
+apply = 0
+reset = 3
 
 
 [[tweak]]
@@ -527,11 +579,21 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\BootAnimation'
 name = "DisableStartupSound"
 regtype = "dword"
 apply = 1
 reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\BootAnimation'
+name = "DisableStartupSound"
+regtype = "dword"
+apply = 1
+reset = 1
 
 [[tweak]]
 id = "cortana-search-policy"
@@ -541,6 +603,7 @@ preset = "std"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 name = "AllowCortana"
 regtype = "dword"
@@ -549,6 +612,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 name = "AllowCortanaAboveLock"
 regtype = "dword"
@@ -589,6 +653,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
 name = "DisableCortana"
 regtype = "dword"
@@ -610,5 +675,121 @@ name = "AllowInputPersonalization"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
+
+[[tweak]]
+id = "taskbar-end-task"
+name = "Taskbar: End task in taskbar right-click menu"
+group = "Windows 11 shell"
+preset = "std"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings'
+name = "TaskbarEndTask"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "start-recommended-off"
+name = "Start: Recommended section hidden"
+group = "Windows 11 shell"
+preset = "std"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer'
+name = "HideRecommendedSection"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "Start_IrisRecommendations"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "context-menu-classic"
+name = "Context menu: classic full menu (no Show more options)"
+group = "Windows 11 shell"
+preset = "std"
+os = "11"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$k = 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32'
+New-Item -Path $k -Force | Out-Null
+Set-ItemProperty -LiteralPath $k -Name '(default)' -Value ''
+'''
+reset = '''
+Remove-Item -LiteralPath 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}' -Recurse -Force -ErrorAction SilentlyContinue
+exit 0
+'''
+check = '''
+$k = 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}'
+if (-not (Test-Path -LiteralPath $k)) { exit 1 }
+$v = (Get-ItemProperty -LiteralPath "$k\InprocServer32" -Name '(default)' -ErrorAction SilentlyContinue).'(default)'
+if ($null -ne $v -and $v -eq '') { exit 0 }
+exit 2
+'''
+
+[[tweak]]
+id = "explorer-gallery-off"
+name = "Explorer: Gallery hidden from navigation pane"
+group = "Windows 11 shell"
+preset = "std"
+os = "11"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$k = 'HKCU:\Software\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}'
+New-Item -Path $k -Force | Out-Null
+New-ItemProperty -LiteralPath $k -Name 'System.IsPinnedToNameSpaceTree' -Value 0 -PropertyType DWord -Force | Out-Null
+'''
+reset = '''
+Remove-Item -LiteralPath 'HKCU:\Software\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}' -Recurse -Force -ErrorAction SilentlyContinue
+exit 0
+'''
+check = '''
+$k = 'HKCU:\Software\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}'
+if (-not (Test-Path -LiteralPath $k)) { exit 1 }
+$v = (Get-ItemProperty -LiteralPath $k -Name 'System.IsPinnedToNameSpaceTree' -ErrorAction SilentlyContinue).'System.IsPinnedToNameSpaceTree'
+if ($v -eq 0) { exit 0 }
+exit 2
+'''
+
+[[tweak]]
+id = "explorer-home-off"
+name = "Explorer: Home hidden from navigation pane"
+group = "Windows 11 shell"
+preset = "std"
+os = "11"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$k = 'HKCU:\Software\Classes\CLSID\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}'
+New-Item -Path $k -Force | Out-Null
+New-ItemProperty -LiteralPath $k -Name 'System.IsPinnedToNameSpaceTree' -Value 0 -PropertyType DWord -Force | Out-Null
+'''
+reset = '''
+Remove-Item -LiteralPath 'HKCU:\Software\Classes\CLSID\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}' -Recurse -Force -ErrorAction SilentlyContinue
+exit 0
+'''
+check = '''
+$k = 'HKCU:\Software\Classes\CLSID\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}'
+if (-not (Test-Path -LiteralPath $k)) { exit 1 }
+$v = (Get-ItemProperty -LiteralPath $k -Name 'System.IsPinnedToNameSpaceTree' -ErrorAction SilentlyContinue).'System.IsPinnedToNameSpaceTree'
+if ($v -eq 0) { exit 0 }
+exit 2
+'''
 
 

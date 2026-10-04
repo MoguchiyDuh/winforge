@@ -44,7 +44,7 @@ path = 'HKCU\Software\Microsoft\Windows\DWM'
 name = "ColorPrevalence"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 0
 
 [[tweak]]
 id = "transparency-on"
@@ -68,6 +68,7 @@ preset = "manual"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Control Panel\Cursors'
 name = "Scheme Source"
 regtype = "dword"
@@ -76,11 +77,30 @@ reset = 0
 
 [[tweak.action]]
 type = "registry"
+os = "11"
+path = 'HKCU\Control Panel\Cursors'
+name = "Scheme Source"
+regtype = "dword"
+apply = 2
+reset = 2
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKCU\Control Panel\Cursors'
 name = ""
 regtype = "sz"
 apply = "Windows Black"
 reset = "Windows Default (system scheme)"
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKCU\Control Panel\Cursors'
+name = ""
+regtype = "sz"
+apply = "Windows Black"
+reset = "Windows Default"
 
 [[tweak.action]]
 type = "registry"
@@ -227,11 +247,21 @@ reset = '1'
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Control Panel\Desktop'
 name = "UserPreferencesMask"
 regtype = "binary"
 apply = [144, 18, 3, 128, 16, 0, 0, 0]
 reset = [158, 62, 7, 128, 18, 0, 0, 0]
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKCU\Control Panel\Desktop'
+name = "UserPreferencesMask"
+regtype = "binary"
+apply = [144, 18, 3, 128, 16, 0, 0, 0]
+reset = [158, 30, 7, 128, 18, 0, 0, 0]
 
 [[tweak.action]]
 type = "registry"
@@ -277,7 +307,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
 name = "SearchboxTaskbarMode"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 2
 
 [[tweak]]
 id = "taskbar-buttons"
@@ -295,6 +325,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "PeopleBand"
 regtype = "dword"
@@ -303,6 +334,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "ShowWindowsInkWorkspaceButton"
 regtype = "dword"
@@ -314,9 +346,11 @@ id = "taskbar-tray"
 name = "Taskbar: always show tray icons (auto-tray off)"
 group = "Taskbar"
 preset = "manual"
+desc = "icons that appear later start unpromoted on Win11, so re-apply after installing new tray apps"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "EnableAutoTray"
 regtype = "dword"
@@ -325,8 +359,60 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer'
 name = "EnableAutoTray"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "command"
+os = "11"
+apply = '''
+$p = 'HKCU:\Control Panel\NotifyIconSettings'
+if (Test-Path -LiteralPath $p) {
+    foreach ($k in @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue)) {
+        New-ItemProperty -LiteralPath $k.PSPath -Name IsPromoted -Value 1 -PropertyType DWord -Force | Out-Null
+    }
+}
+exit 0
+'''
+reset = '''
+$p = 'HKCU:\Control Panel\NotifyIconSettings'
+if (Test-Path -LiteralPath $p) {
+    foreach ($k in @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue)) {
+        New-ItemProperty -LiteralPath $k.PSPath -Name IsPromoted -Value 0 -PropertyType DWord -Force | Out-Null
+    }
+}
+exit 0
+'''
+check = '''
+$p = 'HKCU:\Control Panel\NotifyIconSettings'
+$keys = @(Get-ChildItem -LiteralPath $p -ErrorAction SilentlyContinue)
+if ($keys.Count -eq 0) { exit 1 }
+$on = 0
+$off = 0
+foreach ($k in $keys) {
+    $v = (Get-ItemProperty -LiteralPath $k.PSPath -Name IsPromoted -ErrorAction SilentlyContinue).IsPromoted
+    if ($v -eq 1) { $on++ } else { $off++ }
+}
+if ($on -eq 0) { exit 1 }
+if ($off -eq 0) { exit 0 }
+exit 2
+'''
+
+[[tweak]]
+id = "taskbar-align-left"
+name = "Taskbar: icons aligned left"
+group = "Taskbar"
+preset = "manual"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarAl"
 regtype = "dword"
 apply = 0
 reset = { delete = true }

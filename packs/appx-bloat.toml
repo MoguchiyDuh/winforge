@@ -4,6 +4,7 @@ meta = { id = "appx-bloat", title = "AppX bloat removal", description = "Removes
 id = "appx-cortana"
 name = "Appx: Cortana family"
 group = "AppX packages"
+os = "10"
 
 [[tweak.action]]
 type = "appx"
@@ -79,6 +80,7 @@ apply = "remove"
 id = "appx-edge-legacy"
 name = "Appx: legacy Edge (EdgeHTML)"
 group = "AppX packages"
+os = "10"
 
 [[tweak.action]]
 type = "appx"
@@ -153,11 +155,6 @@ apply = "remove"
 [[tweak.action]]
 type = "appx"
 pattern = 'Microsoft.People'
-apply = "remove"
-
-[[tweak.action]]
-type = "appx"
-pattern = 'Microsoft.Windows.PeopleExperienceHost'
 apply = "remove"
 
 [[tweak]]

@@ -4,6 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 #[path = "src/schema.rs"]
+#[allow(dead_code)]
 mod schema;
 
 use schema::{Action, AppGroup, Pack, RegType, RegistryValue, Value};
@@ -51,6 +52,11 @@ fn main() {
                 ));
             }
             for action in &tweak.action {
+                if let (Some(tweak_os), Some(action_os)) = (tweak.os, action.os())
+                    && tweak_os != action_os
+                {
+                    errors.push(err(path, &tweak.id, "action os contradicts tweak os"));
+                }
                 validate_action(
                     action,
                     pack.meta.oneway(),

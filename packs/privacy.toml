@@ -16,11 +16,21 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy'
 name = "TailoredExperiencesWithDiagnosticDataEnabled"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy'
+name = "TailoredExperiencesWithDiagnosticDataEnabled"
+regtype = "dword"
+apply = 0
+reset = 2
 
 [[tweak.action]]
 type = "registry"
@@ -44,7 +54,7 @@ path = 'HKCU\Software\Microsoft\InputPersonalization'
 name = "RestrictImplicitInkCollection"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 0
 
 [[tweak.action]]
 type = "registry"
@@ -52,7 +62,7 @@ path = 'HKCU\Software\Microsoft\InputPersonalization'
 name = "RestrictImplicitTextCollection"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 0
 
 [[tweak.action]]
 type = "registry"
@@ -60,7 +70,7 @@ path = 'HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore'
 name = "HarvestContacts"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -68,7 +78,7 @@ path = 'HKCU\Software\Microsoft\Personalization\Settings'
 name = "AcceptedPrivacyPolicy"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -144,22 +154,6 @@ reset = { delete = true }
 type = "registry"
 path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
 name = "AllowTelemetry"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
-name = "MaxTelemetryAllowed"
-regtype = "dword"
-apply = 0
-reset = { delete = true }
-
-[[tweak.action]]
-type = "registry"
-path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
-name = "MaxTelemetryAllowed"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
@@ -276,11 +270,21 @@ preset = "min"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\SQMClient\Windows'
 name = "CEIPEnable"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKLM\SOFTWARE\Microsoft\SQMClient\Windows'
+name = "CEIPEnable"
+regtype = "dword"
+apply = 0
+reset = 0
 
 [[tweak.action]]
 type = "registry"
@@ -422,6 +426,7 @@ id = "activity-history"
 name = "Telemetry: activity history upload off"
 group = "Activity history"
 preset = "min"
+os = "10"
 
 [[tweak.action]]
 type = "registry"
@@ -481,15 +486,25 @@ path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA7
 name = "SensorPermissionState"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SYSTEM\Maps'
 name = "AutoUpdateEnabled"
 regtype = "dword"
 apply = 0
 reset = 1
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKLM\SYSTEM\Maps'
+name = "AutoUpdateEnabled"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
@@ -505,6 +520,20 @@ path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors'
 name = "DisableLocationScripts"
 regtype = "dword"
 apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "phone-link-off"
+name = "Telemetry: Phone Link / phone-PC linking off"
+group = "Cross-device"
+preset = "std"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+name = "EnableMmx"
+regtype = "dword"
+apply = 0
 reset = { delete = true }
 
 [[tweak]]
@@ -551,6 +580,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
 name = "CortanaConsent"
 regtype = "dword"
@@ -593,6 +623,145 @@ path = 'HKCU\Software\Policies\Microsoft\Windows\Explorer'
 name = "HideRecentlyAddedApps"
 regtype = "dword"
 apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "widgets-off"
+name = "Shell: Widgets board off (policy)"
+group = "Shell polish"
+preset = "min"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Dsh'
+name = "AllowNewsAndInterests"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "ai-recall-off"
+name = "AI: Recall and Click to Do off"
+group = "Windows AI"
+preset = "min"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+name = "DisableAIDataAnalysis"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+name = "AllowRecallEnablement"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+name = "DisableClickToDo"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\WindowsAI'
+name = "DisableAIDataAnalysis"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "ai-copilot-off"
+name = "AI: Copilot off"
+group = "Windows AI"
+preset = "min"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\Windows\WindowsCopilot'
+name = "TurnOffWindowsCopilot"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot'
+name = "TurnOffWindowsCopilot"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "ShowCopilotButton"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak]]
+id = "ai-inbox-apps-off"
+name = "AI: Notepad and Paint AI features off"
+group = "Windows AI"
+preset = "min"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\WindowsNotepad'
+name = "DisableAIFeatures"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Paint'
+name = "DisableCocreator"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Paint'
+name = "DisableGenerativeFill"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Paint'
+name = "DisableImageCreator"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak]]
+id = "backup-nag-off"
+name = "Notifications: Windows Backup reminder off"
+group = "Notifications"
+preset = "min"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.BackupReminder'
+name = "Enabled"
+regtype = "dword"
+apply = 0
 reset = { delete = true }
 
 [[tweak]]
@@ -748,6 +917,7 @@ id = "ie-policy-keys"
 name = "IE: first-run/migration policies, process off"
 group = "Internet Explorer 11"
 preset = "min"
+os = "10"
 
 [[tweak.action]]
 type = "registry"

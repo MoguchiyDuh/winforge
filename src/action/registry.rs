@@ -28,8 +28,10 @@ pub fn status(act: &RegistryAction, oneway: bool) -> Status {
     };
     let reset_hit = payload_matches(cur.as_ref(), act.regtype, reset);
     return match (apply_hit, reset_hit) {
-        (true, _) => Status::Applied,
+        (true, true) => Status::Neutral,
+        (true, false) => Status::Applied,
         (false, true) => Status::Default,
+        (false, false) if cur.is_none() => Status::Default,
         (false, false) => Status::Mixed,
     };
 }

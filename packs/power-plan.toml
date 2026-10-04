@@ -34,6 +34,7 @@ preset = "std"
 
 [[tweak.action]]
 type = "command"
+os = "10"
 apply = '''
 powercfg /change monitor-timeout-ac 0
 powercfg /change monitor-timeout-dc 10
@@ -80,6 +81,55 @@ if ($okD -eq 3) { exit 1 }
 exit 2
 '''
 
+[[tweak.action]]
+type = "command"
+os = "11"
+apply = '''
+powercfg /change monitor-timeout-ac 0
+powercfg /change monitor-timeout-dc 10
+powercfg /change disk-timeout-ac 0
+powercfg /change disk-timeout-dc 20
+powercfg /change standby-timeout-ac 0
+powercfg /change standby-timeout-dc 20
+powercfg /change hibernate-timeout-ac 0
+powercfg /change hibernate-timeout-dc 0
+'''
+reset = '''
+powercfg /change monitor-timeout-ac 5
+powercfg /change monitor-timeout-dc 3
+powercfg /change disk-timeout-ac 20
+powercfg /change disk-timeout-dc 10
+powercfg /change standby-timeout-ac 15
+powercfg /change standby-timeout-dc 10
+powercfg /change hibernate-timeout-ac 0
+powercfg /change hibernate-timeout-dc 0
+'''
+check = '''
+function Get-Idx([string]$sub, [string]$set) {
+    $q = powercfg /q SCHEME_CURRENT $sub $set 2>$null
+    if (-not $q) { return $null }
+    $v = @($q | Select-String '0x[0-9a-fA-F]+' -AllMatches | ForEach-Object { $_.Matches[-1].Value })
+    if ($v.Count -lt 2) { return $null }
+    return @([Convert]::ToInt64($v[-2].Substring(2), 16), [Convert]::ToInt64($v[-1].Substring(2), 16))
+}
+$video = Get-Idx '7516b95f-f776-4464-8c53-06167f40cc99' '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
+$disk = Get-Idx '0012ee47-9041-4b5d-9b77-535fba8b1442' '6738e2c4-e8a5-4a42-b16a-e040e769756e'
+$standby = Get-Idx '238c9fa8-0aad-41ed-83f4-97be242c8f20' '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+if ($null -eq $video -or $null -eq $disk -or $null -eq $standby) { exit 2 }
+$applied = @(@(0, 600), @(0, 1200), @(0, 1200))
+$default = @(@(300, 180), @(1200, 600), @(900, 600))
+$actual = @($video, $disk, $standby)
+$okA = 0
+$okD = 0
+for ($i = 0; $i -lt 3; $i++) {
+    if ($actual[$i][0] -eq $applied[$i][0] -and $actual[$i][1] -eq $applied[$i][1]) { $okA++ }
+    if ($actual[$i][0] -eq $default[$i][0] -and $actual[$i][1] -eq $default[$i][1]) { $okD++ }
+}
+if ($okA -eq 3) { exit 0 }
+if ($okD -eq 3) { exit 1 }
+exit 2
+'''
+
 [[tweak]]
 id = "processor-boost"
 name = "Power: processor boost aggressive on AC"
@@ -104,7 +154,7 @@ exit 0
 '''
 check = '''
 function Get-Ac([string]$set) {
-    $q = powercfg /q SCHEME_CURRENT 54533251-82be-4824-96c1-47b60b740d00 $set 2>$null
+    $q = powercfg /qh SCHEME_CURRENT 54533251-82be-4824-96c1-47b60b740d00 $set 2>$null
     if (-not $q) { return $null }
     $v = @($q | Select-String '0x[0-9a-fA-F]+' -AllMatches | ForEach-Object { $_.Matches[-1].Value })
     if ($v.Count -lt 2) { return $null }
@@ -203,6 +253,7 @@ preset = "std"
 
 [[tweak.action]]
 type = "command"
+os = "10"
 apply = 'powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setactive SCHEME_CURRENT'
 reset = 'powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 2; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 2; powercfg /setactive SCHEME_CURRENT'
 check = '''
@@ -214,6 +265,23 @@ $ac = [Convert]::ToInt64($v[-2].Substring(2), 16)
 $dc = [Convert]::ToInt64($v[-1].Substring(2), 16)
 if ($ac -eq 0 -and $dc -eq 0) { exit 0 }
 if ($ac -eq 2 -and $dc -eq 2) { exit 1 }
+exit 2
+'''
+
+[[tweak.action]]
+type = "command"
+os = "11"
+apply = 'powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setactive SCHEME_CURRENT'
+reset = 'powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 1; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 2; powercfg /setactive SCHEME_CURRENT'
+check = '''
+$q = powercfg /q SCHEME_CURRENT 501a4d13-42af-4429-9fd1-a8218c268e20 ee12f906-d277-404b-b6da-e5fa1a576df5 2>$null
+if (-not $q) { exit 2 }
+$v = @($q | Select-String '0x[0-9a-fA-F]+' -AllMatches | ForEach-Object { $_.Matches[-1].Value })
+if ($v.Count -lt 2) { exit 2 }
+$ac = [Convert]::ToInt64($v[-2].Substring(2), 16)
+$dc = [Convert]::ToInt64($v[-1].Substring(2), 16)
+if ($ac -eq 0 -and $dc -eq 0) { exit 0 }
+if ($ac -eq 1 -and $dc -eq 2) { exit 1 }
 exit 2
 '''
 
@@ -330,11 +398,21 @@ preset = "std"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy'
 name = "01"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy'
+name = "01"
+regtype = "dword"
+apply = 0
+reset = 1
 
 [[tweak]]
 id = "advanced-reserved-storage-off"
@@ -392,7 +470,7 @@ path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore'
 name = "RPSessionInterval"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -408,14 +486,14 @@ path = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore\cfg'
 name = "DiskPercent"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 15
 
 [[tweak.action]]
 type = "command"
 apply = 'Disable-ComputerRestore -Drive "$env:SystemDrive\"'
 reset = 'Enable-ComputerRestore -Drive "$env:SystemDrive\"'
 check = '''
-$v = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore' -Name DisableSR -ErrorAction SilentlyContinue).DisableSR
+$v = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore' -Name DisableSR -ErrorAction SilentlyContinue).DisableSR
 if ($v -eq 1) { exit 0 }
 exit 1
 '''
@@ -435,18 +513,6 @@ name = "DisableConfig"
 regtype = "dword"
 apply = 1
 reset = { delete = true }
-
-[[tweak]]
-id = "service-srservice"
-name = "Storage: System Restore service disabled"
-group = "System Restore"
-preset = "std"
-
-[[tweak.action]]
-type = "service"
-name = "srservice"
-apply = "disabled"
-reset = "auto"
 
 [[tweak]]
 id = "task-systemrestore-sr"

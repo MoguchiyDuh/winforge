@@ -17,18 +17,37 @@ public static extern IntPtr SendMsgTimeoutP(IntPtr h, uint m, IntPtr w, IntPtr l
 public struct STICKYKEYS { public uint cbSize; public uint dwFlags; }
 '@
 try { Add-Type -Namespace WF -Name Refresh -MemberDefinition $signature -ErrorAction Stop } catch { }
+function Get-Num([string]$path, [string]$name) {
+    $raw = (Get-ItemProperty -LiteralPath $path -Name $name -ErrorAction SilentlyContinue).$name
+    $num = 0
+    if ($null -ne $raw -and [int]::TryParse([string]$raw, [ref]$num)) { return $num }
+    return $null
+}
 try {
-    [WF.Refresh]::SPI_Value(0x0017, 0, [IntPtr]::Zero, 3) | Out-Null
-    [WF.Refresh]::SPI_Value(0x000B, 31, [IntPtr]::Zero, 3) | Out-Null
-    [WF.Refresh]::SPI_Value(0x0071, 0, [IntPtr]7, 3) | Out-Null
-    [WF.Refresh]::SPI_Mouse(0x0004, 0, [int[]]@(0, 0, 0), 3) | Out-Null
+    $kbd = 'HKCU:\Control Panel\Keyboard'
+    $mouse = 'HKCU:\Control Panel\Mouse'
+    $delay = Get-Num $kbd 'KeyboardDelay'
+    if ($null -ne $delay) { [void][WF.Refresh]::SPI_Value(0x0017, [uint32]$delay, [IntPtr]::Zero, 2) }
+    $speed = Get-Num $kbd 'KeyboardSpeed'
+    if ($null -ne $speed) { [void][WF.Refresh]::SPI_Value(0x000B, [uint32]$speed, [IntPtr]::Zero, 2) }
+    $sens = Get-Num $mouse 'MouseSensitivity'
+    if ($null -ne $sens) { [void][WF.Refresh]::SPI_Value(0x0071, 0, [IntPtr]$sens, 2) }
+    $t1 = Get-Num $mouse 'MouseThreshold1'
+    $t2 = Get-Num $mouse 'MouseThreshold2'
+    $accel = Get-Num $mouse 'MouseSpeed'
+    if ($null -ne $t1 -and $null -ne $t2 -and $null -ne $accel) {
+        [void][WF.Refresh]::SPI_Mouse(0x0004, 0, [int[]]@($t1, $t2, $accel), 2)
+    }
     $wp = (Get-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name WallPaper -ErrorAction SilentlyContinue).WallPaper
-    if ($wp) { [void][WF.Refresh]::SPI_Str(0x0014, 0, $wp, 3) }
+    if ($wp) { [void][WF.Refresh]::SPI_Str(0x0014, 0, $wp, 2) }
     [void][WF.Refresh]::SPI_Value(0x0057, 0, [IntPtr]::Zero, 0)
-    $sk = New-Object WF.Refresh+STICKYKEYS
-    $sk.cbSize = [uint32][Runtime.InteropServices.Marshal]::SizeOf([type][WF.Refresh+STICKYKEYS])
-    $sk.dwFlags = 506
-    [WF.Refresh]::SPI_Sticky(0x003B, $sk.cbSize, [ref]$sk, 3) | Out-Null
+    $flags = Get-Num 'HKCU:\Control Panel\Accessibility\StickyKeys' 'Flags'
+    if ($null -ne $flags) {
+        $sk = New-Object WF.Refresh+STICKYKEYS
+        $sk.cbSize = [uint32][Runtime.InteropServices.Marshal]::SizeOf([type][WF.Refresh+STICKYKEYS])
+        $sk.dwFlags = [uint32]$flags
+        [void][WF.Refresh]::SPI_Sticky(0x003B, $sk.cbSize, [ref]$sk, 2)
+    }
     $res = [IntPtr]::Zero
     $imm = [WF.Refresh]::RegisterWindowMsg('ImmersiveColorSet')
     [void][WF.Refresh]::SendMsgTimeoutS([IntPtr]0xffff, 0x001A, [IntPtr]::Zero, 'ImmersiveColorSet', 2, 3000, [ref]$res)

@@ -14,6 +14,7 @@ pub enum Status {
     Mixed,
     Unknown,
     Absent,
+    Neutral,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

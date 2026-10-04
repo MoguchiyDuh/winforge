@@ -50,12 +50,16 @@ preset = "manual"
 type = "command"
 apply = '''
 $ErrorActionPreference = 'Stop'
-wsl.exe --update 2>$null
+cmd /c 'wsl.exe --status >nul 2>&1'
+if ($LASTEXITCODE -ne 0) { Write-Output 'wsl not installed yet (enable features + reboot first)'; exit 0 }
+wsl.exe --update --web-download 2>$null
 $out = wsl.exe --set-default-version 2 2>&1
 if ($LASTEXITCODE -ne 0) { Write-Output $out; exit 1 }
 '''
 reset = '''
 $ErrorActionPreference = 'Stop'
+cmd /c 'wsl.exe --status >nul 2>&1'
+if ($LASTEXITCODE -ne 0) { Write-Output 'wsl not installed'; exit 0 }
 $out = wsl.exe --set-default-version 1 2>&1
 if ($LASTEXITCODE -ne 0) { Write-Output $out; exit 1 }
 '''
@@ -153,4 +157,4 @@ path = 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem'
 name = "LongPathsEnabled"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 0

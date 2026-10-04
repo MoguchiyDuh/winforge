@@ -28,6 +28,7 @@ usage:
   winforge --dump                   print the embedded pack catalog as JSON
   winforge --list                   list packs, tweaks and their status
   winforge --select <spec>... [--preset <tier>] (--apply | --reset) [--yes]
+  winforge --winget-repair          install or repair winget only, no apps
 
 specs:
   <tweak-id>       act on one tweak
@@ -42,6 +43,7 @@ options:
   --yes               skip confirmation
   --dump              print the embedded pack catalog as JSON
   --list              list packs, tweaks and their status
+  --winget-repair     install or repair winget (internet), install no apps
   --help              show this help
 
 oneway tweaks are one-way: applying them prints a warning and can never be undone
@@ -60,7 +62,8 @@ struct Cli {
 }
 
 fn main() -> ExitCode {
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    let (args, origin) = split_origin(std::env::args().skip(1).collect());
+    sys::set_origin_sid(origin);
     if args.iter().any(|arg| arg == "--help") {
         let _ = write!(
             io::stdout(),
@@ -80,6 +83,12 @@ fn main() -> ExitCode {
             return code;
         }
         return cmd_list();
+    }
+    if args.len() == 1 && args[0] == "--winget-repair" {
+        if let Some(code) = gate(&args) {
+            return code;
+        }
+        return cmd_winget_repair();
     }
     let cli = match parse_args(&args) {
         Ok(cli) => cli,
@@ -101,6 +110,38 @@ fn main() -> ExitCode {
         return code;
     }
     return execute(&packs, &selection, &cli);
+}
+
+fn split_origin(raw: Vec<String>) -> (Vec<String>, Option<String>) {
+    let mut args = Vec::with_capacity(raw.len());
+    let mut origin = None;
+    let mut iter = raw.into_iter();
+    while let Some(arg) = iter.next() {
+        if arg == "--origin-sid" {
+            origin = iter.next();
+            continue;
+        }
+        args.push(arg);
+    }
+    return (args, origin);
+}
+
+fn cmd_winget_repair() -> ExitCode {
+    sys::enable_vt();
+    println!("{}", dim("winforge: installing/repairing winget (needs internet)..."));
+    match winget::repair() {
+        Ok(text) => {
+            println!("{}", ok(&format!("winforge: {text}")));
+            return ExitCode::SUCCESS;
+        }
+        Err(message) => {
+            println!("{}", err(&format!("winforge: {message}")));
+            for line in sys::log_tail(40) {
+                println!("  {}", dim(&line));
+            }
+            return ExitCode::FAILURE;
+        }
+    }
 }
 
 fn parse_args(args: &[String]) -> Result<Cli, String> {
@@ -283,7 +324,7 @@ fn cmd_list() -> ExitCode {
         }
         for (tweak, status) in engine::tweak_statuses(pack) {
             let letter = match status {
-                Status::Applied => 'A',
+                Status::Applied | Status::Neutral => 'A',
                 Status::Default => 'D',
                 Status::Mixed => 'M',
                 Status::Unknown => 'U',
@@ -334,7 +375,12 @@ fn gate(args: &[String]) -> Option<ExitCode> {
     }
     if !sys::is_admin() {
         println!("winforge: requesting administrator rights...");
-        match sys::elevate(args) {
+        let mut relaunch = args.to_vec();
+        if let Some(sid) = sys::current_user_sid() {
+            relaunch.push(String::from("--origin-sid"));
+            relaunch.push(sid);
+        }
+        match sys::elevate(&relaunch) {
             Ok(()) => {
                 sys::log("relaunched elevated");
                 return Some(ExitCode::SUCCESS);
@@ -346,6 +392,10 @@ fn gate(args: &[String]) -> Option<ExitCode> {
                 return Some(ExitCode::FAILURE);
             }
         }
+    }
+    if let Some(warning) = sys::foreign_user_warning() {
+        println!("{}", warn(&format!("winforge: {warning}")));
+        sys::log(&warning);
     }
     return None;
 }

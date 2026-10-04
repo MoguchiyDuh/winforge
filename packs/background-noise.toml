@@ -26,9 +26,17 @@ reset = "manual"
 
 [[tweak.action]]
 type = "service"
+os = "10"
 name = "PcaSvc"
 apply = "disabled"
 reset = "auto"
+
+[[tweak.action]]
+type = "service"
+os = "11"
+name = "PcaSvc"
+apply = "disabled"
+reset = "manual"
 
 [[tweak.action]]
 type = "service"
@@ -56,9 +64,17 @@ reset = "auto"
 
 [[tweak.action]]
 type = "service"
+os = "10"
 name = "dam"
 apply = "disabled"
 reset = "manual"
+
+[[tweak.action]]
+type = "service"
+os = "11"
+name = "dam"
+apply = "disabled"
+reset = "system"
 
 [[tweak.action]]
 type = "service"
@@ -137,13 +153,17 @@ exit 0
 check = '''
 $applied = 0
 $default = 0
+$existing = 0
 foreach ($n in @('DiagTrack-Listener', 'SQMLogger', 'SetupPlatformTel', 'DiagLog', 'NetTrace')) {
     $p = "HKLM:\SYSTEM\CurrentControlSet\Control\WMI\Autologger\$n"
+    if (-not (Test-Path -LiteralPath $p)) { continue }
+    $existing++
     $v = (Get-ItemProperty -LiteralPath $p -Name Start -ErrorAction SilentlyContinue).Start
     if ($v -eq 0) { $applied++ } else { $default++ }
 }
-if ($applied -eq 5) { exit 0 }
-if ($default -eq 5) { exit 1 }
+if ($existing -eq 0) { exit 1 }
+if ($applied -eq $existing) { exit 0 }
+if ($applied -eq 0) { exit 1 }
 exit 2
 '''
 
@@ -152,6 +172,7 @@ id = "tasks-telemetry-off"
 name = "Tasks: telemetry, CEIP, maps, diagnostics, Office off"
 group = "Scheduled telemetry tasks"
 preset = "min"
+desc = "disables scheduled telemetry, CEIP and diagnostics tasks (cumulative updates can re-enable some of them like Sqm-Tasks and ProcessMemoryDiagnosticEvents, so re-apply after updates)"
 
 [[tweak.action]]
 type = "task"
@@ -452,7 +473,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
 name = "SilentInstalledAppsEnabled"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -460,7 +481,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
 name = "SoftLandingEnabled"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -468,7 +489,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
 name = "SystemPaneSuggestionsEnabled"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -476,7 +497,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
 name = "RotatingLockScreenEnabled"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -484,7 +505,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
 name = "RotatingLockScreenOverlayEnabled"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -492,7 +513,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
 name = "PreInstalledAppsEnabled"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak]]
 id = "notification-nags-off"
@@ -705,7 +726,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplicati
 name = "GlobalUserDisabled"
 regtype = "dword"
 apply = 1
-reset = 0
+reset = { delete = true }
 
 [[tweak]]
 id = "edge-updater-services"

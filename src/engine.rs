@@ -94,9 +94,14 @@ fn tweak_status(tweak: &Tweak, oneway: bool) -> Status {
     let mut all_applied = true;
     let mut all_default = true;
     let mut any_present = false;
+    let mut any_neutral = false;
     for action in &tweak.action {
         let status = action::status(action, oneway);
         if status == Status::Absent {
+            continue;
+        }
+        if status == Status::Neutral {
+            any_neutral = true;
             continue;
         }
         any_present = true;
@@ -111,6 +116,9 @@ fn tweak_status(tweak: &Tweak, oneway: bool) -> Status {
         }
     }
     if !any_present {
+        if any_neutral {
+            return Status::Applied;
+        }
         return Status::Absent;
     }
     if any_unknown {
@@ -135,7 +143,7 @@ pub fn summarize(statuses: &[Status]) -> Summary {
     let mut counts = [0usize; 5];
     for status in statuses {
         let index = match status {
-            Status::Applied => 0,
+            Status::Applied | Status::Neutral => 0,
             Status::Default => 1,
             Status::Mixed => 2,
             Status::Unknown => 3,

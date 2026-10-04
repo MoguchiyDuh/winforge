@@ -17,13 +17,26 @@ pub fn winget_exe() -> Option<PathBuf> {
     if let Some(path) = find_in_path("winget.exe") {
         return Some(path);
     }
-    let local = env::var_os("LOCALAPPDATA").map(PathBuf::from)?;
-    let candidate = local
-        .join("Microsoft")
-        .join("WindowsApps")
-        .join("winget.exe");
-    if candidate.is_file() {
-        return Some(candidate);
+    let local = env::var_os("LOCALAPPDATA").map(PathBuf::from);
+    if let Some(local) = local {
+        let candidate = local
+            .join("Microsoft")
+            .join("WindowsApps")
+            .join("winget.exe");
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    return package_exe();
+}
+
+fn package_exe() -> Option<PathBuf> {
+    let script = "$p = Get-AppxPackage -Name 'Microsoft.DesktopAppInstaller' -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1\nif ($p) { Join-Path $p.InstallLocation 'winget.exe' }\n";
+    let out = sys::run_script(script, sys::TIMEOUT_PROBE).ok()?;
+    let text = sys::output_text(&out);
+    let path = PathBuf::from(text.lines().last()?.trim());
+    if path.is_file() {
+        return Some(path);
     }
     return None;
 }
@@ -60,25 +73,31 @@ pub fn ensure() -> Result<(), String> {
     return Err(String::from("winget is still unavailable after bootstrap"));
 }
 
-pub fn repair() -> Result<(), String> {
-    run_winget_script(true)?;
-    return Ok(());
+pub fn repair() -> Result<String, String> {
+    let text = run_winget_script(true)?;
+    if !available() {
+        return Err(format!("winget is still unavailable after repair: {text}"));
+    }
+    return Ok(text);
 }
 
-fn run_winget_script(force: bool) -> Result<(), String> {
+fn run_winget_script(force: bool) -> Result<String, String> {
     let Some(script) = catalog::script("winget.ps1") else {
         return Err(String::from("winget.ps1 is not embedded"));
     };
     let extra: &[&str] = if force { &["-Force"] } else { &[] };
     let out = sys::run_script_args(script, extra, sys::TIMEOUT_WINGET_SCRIPT)?;
+    let text = sys::output_text(&out);
+    for line in text.lines().filter(|line| !line.trim().is_empty()) {
+        sys::log(&format!("winget.ps1: {}", line.trim()));
+    }
     if !out.status.success() {
         return Err(format!(
-            "winget bootstrap failed (exit {}): {}",
-            out.status.code().unwrap_or(-1),
-            sys::output_text(&out)
+            "winget bootstrap failed (exit {})",
+            out.status.code().unwrap_or(-1)
         ));
     }
-    return Ok(());
+    return Ok(text.lines().last().unwrap_or("").trim().to_string());
 }
 
 pub fn install_app_quiet(app: &App) -> AppResult {
@@ -124,8 +143,15 @@ fn install_args(app: &App) -> Vec<String> {
 fn classify(code: i32) -> AppResult {
     return match code as u32 {
         0 => AppResult::Installed,
-        0x8A150061 | 0x8A15002B | 0x8A15010D | 0x8A15010E => AppResult::AlreadyPresent,
+        0x8A150061 | 0x8A15002B | 0x8A15010D => AppResult::AlreadyPresent,
+        0x8A15010E => AppResult::AlreadyPresent,
         0x8A150109 => AppResult::InstalledRebootRequired,
+        0x8A15010A => AppResult::Failed(String::from("0x8A15010A reboot required before install")),
+        0x8A15010F => AppResult::Failed(String::from("0x8A15010F blocked by policy")),
+        0x8A150019 => AppResult::Failed(String::from("0x8A150019 needs admin")),
+        0x8A150104 => AppResult::Failed(String::from("0x8A150104 missing dependency")),
+        0x8A15000F => AppResult::Failed(String::from("0x8A15000F source data missing; repair winget")),
+        0x8A150014 => AppResult::Failed(String::from("0x8A150014 package not found")),
         other => AppResult::Failed(format!("0x{other:08X}")),
     };
 }

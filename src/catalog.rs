@@ -1,12 +1,17 @@
 include!(concat!(env!("OUT_DIR"), "/embeds.rs"));
 
 use crate::schema::{AppGroup, Pack};
+use crate::sys;
 
 pub fn packs() -> Vec<Pack> {
+    let os = sys::current_os();
     let mut out = Vec::new();
     for (name, text) in PACK_FILES {
         match toml::from_str::<Pack>(text) {
-            Ok(pack) => out.push(pack),
+            Ok(pack) => match os {
+                Some(os) => out.extend(pack.for_os(os)),
+                None => out.push(pack),
+            },
             Err(err) => eprintln!("winforge: pack {name} failed to parse: {err}"),
         }
     }

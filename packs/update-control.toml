@@ -1,13 +1,22 @@
-meta = { id = "update-control", title = "Update control", description = "Feature and quality updates paused until 2038, no auto reboot with logged-on users, WU driver installs and Insider builds off, upgrade/restart nags off, app auto-restart after update off, Delivery Optimization P2P off, Edge updates blocked via EdgeUpdate keys, Media Player auto-update off; Defender definitions keep updating" }
+meta = { id = "update-control", title = "Update control", description = "Automatic updates off via policy (Win10 also paused until 2038), no auto reboot with logged-on users, WU driver installs and Insider builds off, upgrade/restart nags off, app auto-restart after update off, Delivery Optimization P2P off, Edge updates blocked via EdgeUpdate keys, Media Player auto-update off; Defender definitions keep updating" }
 
 [[tweak]]
-id = "wu-pause-2038"
-name = "Updates: pause until 2038-01-19"
+id = "wu-auto-updates-off"
+name = "Updates: automatic updates off (manual Check for updates still works)"
 group = "Windows Update"
 preset = "min"
 
 [[tweak.action]]
 type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+name = "NoAutoUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "FlightSettingsMaxPauseDays"
 regtype = "dword"
@@ -16,6 +25,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "PauseFeatureUpdatesStartTime"
 regtype = "sz"
@@ -24,6 +34,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "PauseFeatureUpdatesEndTime"
 regtype = "sz"
@@ -32,6 +43,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "PauseQualityUpdatesStartTime"
 regtype = "sz"
@@ -40,6 +52,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "PauseQualityUpdatesEndTime"
 regtype = "sz"
@@ -48,6 +61,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "PauseUpdatesStartTime"
 regtype = "sz"
@@ -56,6 +70,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "PauseUpdatesExpiryTime"
 regtype = "sz"
@@ -132,11 +147,21 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
 name = "ExcludeWUDriversInQualityUpdate"
 regtype = "dword"
 apply = 1
 reset = 0
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
+name = "ExcludeWUDriversInQualityUpdate"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
@@ -258,6 +283,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\EdgeUpdate'
 name = "DoNotUpdateToEdgeWithChromium"
 regtype = "dword"
@@ -274,6 +300,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate'
 name = "DoNotUpdateToEdgeWithChromium"
 regtype = "dword"
@@ -290,6 +317,7 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate'
 name = "DoNotUpdateToEdgeWithChromium"
 regtype = "dword"

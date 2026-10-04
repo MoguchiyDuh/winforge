@@ -16,7 +16,7 @@ reset = 2
 
 [[tweak]]
 id = "svchost-split"
-name = "Telemetry: svchost split threshold sized to RAM"
+name = "Performance: svchost split threshold sized to RAM"
 group = "svchost split"
 preset = "std"
 
@@ -27,15 +27,14 @@ $m = (Get-CimInstance Win32_PhysicalMemory | Measure-Object Capacity -Sum).Sum /
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name SvcHostSplitThresholdInKB -PropertyType DWord -Value ([int]$m) -Force | Out-Null
 '''
 reset = '''
-Remove-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name SvcHostSplitThresholdInKB -ErrorAction SilentlyContinue
+New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name SvcHostSplitThresholdInKB -PropertyType DWord -Value 3670016 -Force | Out-Null
 exit 0
 '''
 check = '''
 $v = (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control' -Name SvcHostSplitThresholdInKB -ErrorAction SilentlyContinue).SvcHostSplitThresholdInKB
-if ($null -eq $v) { exit 1 }
 $m = (Get-CimInstance Win32_PhysicalMemory | Measure-Object Capacity -Sum).Sum / 1KB
 if ([int]$v -eq [int]$m) { exit 0 }
-exit 2
+exit 1
 '''
 
 [[tweak]]
@@ -183,7 +182,7 @@ path = 'HKCU\System\GameConfigStore'
 name = "GameDVR_Enabled"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak]]
 id = "hags"
@@ -265,7 +264,7 @@ path = 'HKCU\Software\Microsoft\Windows\DWM'
 name = "EnableAeroPeek"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -273,7 +272,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "ListviewAlphaSelect"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -281,7 +280,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "ListviewShadow"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak.action]]
 type = "registry"
@@ -289,7 +288,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "TaskbarAnimations"
 regtype = "dword"
 apply = 0
-reset = { delete = true }
+reset = 1
 
 [[tweak]]
 id = "nagle-off"
@@ -354,7 +353,7 @@ path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
 name = "SeparateProcess"
 regtype = "dword"
 apply = 1
-reset = { delete = true }
+reset = 0
 
 [[tweak]]
 id = "bsod-display-parameters"

@@ -90,7 +90,10 @@ type = "command"
 apply = 'bcdedit /set hypervisorlaunchtype off'
 reset = 'bcdedit /set hypervisorlaunchtype auto'
 check = '''
-$out = & "$env:SystemRoot\System32\bcdedit.exe" /enum '{current}' 2>$null
+$f = Join-Path $env:TEMP 'wf-bcd.txt'
+& "$env:SystemRoot\System32\bcdedit.exe" /enum '{current}' | Set-Content -LiteralPath $f
+$out = Get-Content -LiteralPath $f
+Remove-Item -LiteralPath $f -Force -ErrorAction SilentlyContinue
 if ($LASTEXITCODE -ne 0) { exit 2 }
 $line = @($out | Where-Object { $_ -match 'hypervisorlaunchtype\s+(\S+)' })[0]
 if (-not $line) { exit 1 }
@@ -118,7 +121,7 @@ reset = { delete = true }
 [[tweak.action]]
 type = "registry"
 path = 'HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity'
-name = "HVCIEnabled"
+name = "Enabled"
 regtype = "dword"
 apply = 0
 reset = { delete = true }
@@ -131,6 +134,7 @@ preset = "max"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
 name = "DisableAntiSpyware"
 regtype = "dword"
@@ -315,7 +319,7 @@ reset = "manual"
 type = "service"
 name = "wscsvc"
 apply = "disabled"
-reset = "auto"
+reset = "delayed"
 
 [[tweak.action]]
 type = "service"
@@ -404,9 +408,9 @@ preset = "max"
 type = "registry"
 path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
 name = "SecurityHealth"
-regtype = "sz"
+regtype = "expandsz"
 apply = { delete = true }
-reset = 'C:\Windows\System32\SecurityHealthSystray.exe'
+reset = '%windir%\system32\SecurityHealthSystray.exe'
 
 [[tweak]]
 id = "advanced-smb1-off"
@@ -430,21 +434,35 @@ id = "smartscreen-off"
 name = "Security: SmartScreen off"
 group = "SmartScreen"
 preset = "max"
-desc = "sets the EnableSmartScreen policy to 0 so Explorer and Edge no longer run SmartScreen reputation checks (reset deletes the policy value, the stock state)"
+desc = "sets the EnableSmartScreen policy under HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System to 0 and Explorer's SmartScreenEnabled to Off so Explorer and Edge no longer run SmartScreen reputation checks (reset deletes both values, the stock state)"
 
 [[tweak.action]]
-type = "command"
-apply = '''
-New-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Force -ErrorAction SilentlyContinue | Out-Null
-New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name EnableSmartScreen -Value 0 -PropertyType DWord -Force | Out-Null
-'''
-reset = '''
-Remove-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name EnableSmartScreen -ErrorAction SilentlyContinue
-exit 0
-'''
-check = '''
-$v = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name EnableSmartScreen -ErrorAction SilentlyContinue).EnableSmartScreen
-if ($null -eq $v) { exit 1 }
-if ([int]$v -eq 0) { exit 0 }
-exit 2
-'''
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\System'
+name = "EnableSmartScreen"
+regtype = "dword"
+apply = 0
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer'
+name = "SmartScreenEnabled"
+regtype = "sz"
+apply = "Off"
+reset = { delete = true }
+
+[[tweak]]
+id = "bitlocker-auto-encryption-off"
+name = "Security: automatic device encryption off"
+group = "BitLocker"
+preset = "std"
+desc = "prevents Windows from silently turning on BitLocker device encryption; does not decrypt drives that are already encrypted"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SYSTEM\CurrentControlSet\Control\BitLocker'
+name = "PreventDeviceEncryption"
+regtype = "dword"
+apply = 1
+reset = { delete = true }

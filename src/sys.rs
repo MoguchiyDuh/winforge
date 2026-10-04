@@ -9,9 +9,10 @@ use std::sync::{Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use windows_sys::Win32::Foundation::CloseHandle;
+use windows_sys::Win32::Foundation::{CloseHandle, LocalFree};
+use windows_sys::Win32::Security::Authorization::ConvertSidToStringSidW;
 use windows_sys::Win32::Security::{
-    GetTokenInformation, TOKEN_ELEVATION, TOKEN_QUERY, TokenElevation,
+    GetTokenInformation, TOKEN_ELEVATION, TOKEN_QUERY, TOKEN_USER, TokenElevation, TokenUser,
 };
 use windows_sys::Win32::System::Console::{
     ENABLE_VIRTUAL_TERMINAL_PROCESSING, GetConsoleMode, GetStdHandle, STD_INPUT_HANDLE,
@@ -22,8 +23,10 @@ use windows_sys::Win32::System::Threading::{
 };
 use windows_sys::Win32::UI::Shell::ShellExecuteW;
 
+use crate::schema::Os;
+
 pub const TIMEOUT_PROBE: Duration = Duration::from_secs(30);
-pub const TIMEOUT_SCRIPT: Duration = Duration::from_secs(300);
+pub const TIMEOUT_SCRIPT: Duration = Duration::from_secs(900);
 pub const TIMEOUT_WINGET_INSTALL: Duration = Duration::from_secs(1800);
 pub const TIMEOUT_WINGET_SCRIPT: Duration = Duration::from_secs(900);
 
@@ -82,6 +85,11 @@ pub fn windows_build() -> Result<u32, String> {
         .map_err(|err| format!("cannot parse CurrentBuildNumber '{raw}': {err}"));
 }
 
+pub fn current_os() -> Option<Os> {
+    static OS: OnceLock<Option<Os>> = OnceLock::new();
+    return *OS.get_or_init(|| windows_build().ok().map(Os::from_build));
+}
+
 pub fn is_admin() -> bool {
     unsafe {
         let mut token = std::ptr::null_mut();
@@ -99,6 +107,58 @@ pub fn is_admin() -> bool {
         );
         CloseHandle(token);
         return ok != 0 && elevation.TokenIsElevated != 0;
+    }
+}
+
+static ORIGIN_SID: OnceLock<Option<String>> = OnceLock::new();
+
+pub fn set_origin_sid(sid: Option<String>) {
+    let _ = ORIGIN_SID.set(sid);
+}
+
+pub fn foreign_user_warning() -> Option<String> {
+    let origin = ORIGIN_SID.get()?.as_ref()?;
+    let current = current_user_sid()?;
+    if origin.eq_ignore_ascii_case(&current) {
+        return None;
+    }
+    return Some(String::from(
+        "elevated as a different account than the one that started winforge; HKCU tweaks apply to the admin account, not to the signed-in user",
+    ));
+}
+
+pub fn current_user_sid() -> Option<String> {
+    unsafe {
+        let mut token = std::ptr::null_mut();
+        if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) == 0 {
+            return None;
+        }
+        let mut needed = 0u32;
+        GetTokenInformation(token, TokenUser, std::ptr::null_mut(), 0, &mut needed);
+        let mut buf = vec![0u64; (needed as usize).div_ceil(8).max(1)];
+        let ok = GetTokenInformation(
+            token,
+            TokenUser,
+            buf.as_mut_ptr() as *mut core::ffi::c_void,
+            (buf.len() * 8) as u32,
+            &mut needed,
+        );
+        CloseHandle(token);
+        if ok == 0 {
+            return None;
+        }
+        let user = &*(buf.as_ptr() as *const TOKEN_USER);
+        let mut wide: *mut u16 = std::ptr::null_mut();
+        if ConvertSidToStringSidW(user.User.Sid, &mut wide) == 0 || wide.is_null() {
+            return None;
+        }
+        let mut len = 0usize;
+        while *wide.add(len) != 0 {
+            len += 1;
+        }
+        let sid = String::from_utf16_lossy(std::slice::from_raw_parts(wide, len));
+        LocalFree(wide as *mut core::ffi::c_void);
+        return Some(sid);
     }
 }
 
@@ -168,12 +228,24 @@ pub fn run_script_args(
     let path = write_temp("winforge-ps", "ps1", script.as_bytes())?;
     let mut line = format!("& \"{}\"", path.to_string_lossy());
     for arg in extra_args {
+        if is_switch(arg) {
+            line.push(' ');
+            line.push_str(arg);
+            continue;
+        }
         line.push_str(&format!(" \"{}\"", arg.replace('"', "")));
     }
     line.push('\n');
     let result = ps_host_run(&line, timeout);
     let _ = fs::remove_file(&path);
     return result;
+}
+
+fn is_switch(arg: &str) -> bool {
+    let Some(name) = arg.strip_prefix('-') else {
+        return false;
+    };
+    return !name.is_empty() && name.bytes().all(|b| b.is_ascii_alphanumeric());
 }
 
 const PS_MARKER: &str = "__WF_RC__";

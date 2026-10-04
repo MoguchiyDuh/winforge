@@ -8,6 +8,7 @@ preset = "manual"
 
 [[tweak.action]]
 type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
 name = "AccentPalette"
 regtype = "binary"
@@ -16,6 +17,16 @@ reset = [166, 216, 255, 0, 118, 185, 237, 0, 66, 156, 227, 0, 0, 120, 215, 0, 0,
 
 [[tweak.action]]
 type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
+name = "AccentPalette"
+regtype = "binary"
+apply = [212, 181, 255, 0, 192, 150, 250, 0, 168, 130, 221, 0, 135, 100, 184, 0, 91, 62, 131, 0, 60, 39, 89, 0, 43, 28, 64, 0, 142, 140, 216, 0]
+reset = [153, 235, 255, 0, 76, 194, 255, 0, 0, 145, 248, 0, 0, 120, 212, 0, 0, 103, 192, 0, 0, 62, 146, 0, 0, 26, 104, 0, 247, 99, 12, 0]
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
 name = "AccentColorMenu"
 regtype = "dword"
@@ -24,6 +35,16 @@ reset = 0xFF0078D7
 
 [[tweak.action]]
 type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
+name = "AccentColorMenu"
+regtype = "dword"
+apply = 0xFFB86487
+reset = 0xFFD47800
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
 name = "StartColorMenu"
 regtype = "dword"
@@ -32,6 +53,16 @@ reset = 0xFF0063B1
 
 [[tweak.action]]
 type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
+name = "StartColorMenu"
+regtype = "dword"
+apply = 0xFF833E5B
+reset = 0xFFC06700
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\DWM'
 name = "AccentColor"
 regtype = "dword"
@@ -40,6 +71,16 @@ reset = 0xFF0078D7
 
 [[tweak.action]]
 type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "AccentColor"
+regtype = "dword"
+apply = 0xFFB86487
+reset = 0xFFD47800
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\DWM'
 name = "ColorizationColor"
 regtype = "dword"
@@ -48,11 +89,30 @@ reset = 0xC40078D7
 
 [[tweak.action]]
 type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationColor"
+regtype = "dword"
+apply = 0xC48764B8
+reset = 0xC40078D4
+
+[[tweak.action]]
+type = "registry"
+os = "10"
 path = 'HKCU\Software\Microsoft\Windows\DWM'
 name = "ColorizationAfterglow"
 regtype = "dword"
 apply = 0xC48764B8
 reset = 0xC40078D7
+
+[[tweak.action]]
+type = "registry"
+os = "11"
+path = 'HKCU\Software\Microsoft\Windows\DWM'
+name = "ColorizationAfterglow"
+regtype = "dword"
+apply = 0xC48764B8
+reset = 0xC40078D4
 
 [[tweak.action]]
 type = "registry"
@@ -119,7 +179,7 @@ path = 'HKCU\Control Panel\Desktop'
 name = "WallpaperStyle"
 regtype = "sz"
 apply = "10"
-reset = { delete = true }
+reset = "10"
 
 [[tweak.action]]
 type = "registry"
@@ -127,7 +187,7 @@ path = 'HKCU\Control Panel\Desktop'
 name = "TileWallpaper"
 regtype = "sz"
 apply = "0"
-reset = { delete = true }
+reset = "0"
 
 [[tweak.action]]
 type = "registry"
@@ -232,7 +292,7 @@ path = 'HKU\.DEFAULT\Control Panel\Keyboard'
 name = "InitialKeyboardIndicators"
 regtype = "sz"
 apply = "2147483650"
-reset = { delete = true }
+reset = "2147483648"
 
 [[tweak]]
 id = "keyboard"

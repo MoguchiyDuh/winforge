@@ -78,6 +78,8 @@ struct App {
     groups: Vec<AppGroup>,
     app_results: HashMap<String, String>,
     winget_ready: Option<bool>,
+    winget_probe: Option<Receiver<bool>>,
+    foreign_user: bool,
     screen: Screen,
     cursor: usize,
     focus: Focus,
@@ -155,6 +157,7 @@ enum Job {
     Apply { targets: Vec<Target> },
     Reset { targets: Vec<Target> },
     Apps { apps: Vec<crate::schema::App> },
+    WingetRepair,
 }
 
 enum JobMsg {
@@ -203,8 +206,9 @@ fn spawn_job(packs: Arc<Vec<Pack>>, job: Job) -> Receiver<JobMsg> {
                         ));
                     }
                     if !winget::available() {
-                        if let Err(message) = winget::repair() {
-                            sys::log(&format!("apps: repair failed: {message}"));
+                        match winget::repair() {
+                            Ok(text) => sys::log(&format!("apps: {text}")),
+                            Err(message) => sys::log(&format!("apps: repair failed: {message}")),
                         }
                     }
                 }
@@ -225,6 +229,13 @@ fn spawn_job(packs: Arc<Vec<Pack>>, job: Job) -> Receiver<JobMsg> {
                         id: app.id.clone(),
                         label,
                     });
+                }
+            }
+            Job::WingetRepair => {
+                sys::log("winget: install/repair started (needs internet, can take minutes)");
+                match winget::repair() {
+                    Ok(text) => sys::log(&format!("winget: {text}")),
+                    Err(message) => sys::log(&format!("winget: repair failed: {message}")),
                 }
             }
         }
@@ -288,6 +299,8 @@ impl App {
             groups: catalog::app_groups(),
             app_results: HashMap::new(),
             winget_ready: None,
+            winget_probe: None,
+            foreign_user: sys::foreign_user_warning().is_some(),
             screen: Screen::Declutter,
             cursor: 0,
             focus: Focus::List,
@@ -397,9 +410,26 @@ impl App {
                 }
             }
             Screen::Apps => {
-                if self.winget_ready.is_none() {
-                    let ready = winget::available();
-                    self.winget_ready = Some(ready);
+                if let Some(rx) = self.winget_probe.as_ref() {
+                    match rx.try_recv() {
+                        Ok(ready) => {
+                            self.winget_ready = Some(ready);
+                            self.winget_probe = None;
+                        }
+                        Err(TryRecvError::Disconnected) => {
+                            self.winget_ready = Some(false);
+                            self.winget_probe = None;
+                        }
+                        Err(TryRecvError::Empty) => {}
+                    }
+                    return;
+                }
+                if self.winget_ready.is_none() && self.busy.is_none() {
+                    let (tx, rx) = mpsc::channel();
+                    thread::spawn(move || {
+                        let _ = tx.send(winget::available());
+                    });
+                    self.winget_probe = Some(rx);
                 }
             }
             Screen::Activate => {}
@@ -622,6 +652,13 @@ impl App {
         self.busy = Some("installing");
         self.job_rx = Some(spawn_job(Arc::clone(&self.packs), Job::Apps { apps }));
     }
+
+    fn winget_repair(&mut self) {
+        self.winget_ready = None;
+        self.winget_probe = None;
+        self.busy = Some("repairing winget");
+        self.job_rx = Some(spawn_job(Arc::clone(&self.packs), Job::WingetRepair));
+    }
 }
 
 fn handle_event(app: &mut App, ev: Event) {
@@ -746,6 +783,7 @@ fn handle_key(app: &mut App, code: KeyCode) {
             app.selection.apply_preset(packs, Tier::Max, true);
         }
         KeyCode::Char('u') => app.request_reset(),
+        KeyCode::Char('r') if app.screen == Screen::Apps => app.winget_repair(),
         KeyCode::Char('q') | KeyCode::Esc => app.request_quit(),
         _ => {}
     }
@@ -788,7 +826,13 @@ fn draw(frame: &mut Frame, app: &mut App) {
         ),
     }
     draw_log(frame, root[2]);
-    draw_footer(frame, root[3], app.modal.is_some(), app.busy);
+    draw_footer(
+        frame,
+        root[3],
+        app.modal.is_some(),
+        app.busy,
+        app.screen == Screen::Apps,
+    );
     if let Some(modal) = &app.modal {
         let selected = app.selection.ids().len();
         draw_modal(frame, frame.area(), modal, selected);
@@ -826,6 +870,14 @@ fn draw_header(frame: &mut Frame, area: Rect, app: &App) {
         Span::raw("  "),
         admin,
         Span::raw(format!("  selected: {selected}")),
+        if app.foreign_user {
+            Span::styled(
+                "  HKCU = admin account, not signed-in user",
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+            )
+        } else {
+            Span::raw("")
+        },
         Span::styled(
             "   (enter apply, u undo, q quit)",
             Style::default().fg(Color::DarkGray),
@@ -920,16 +972,16 @@ fn draw_declutter(frame: &mut Frame, area: Rect, app: &mut App) {
 
 fn draw_apps(frame: &mut Frame, area: Rect, app: &mut App) {
     let chunks = Layout::vertical([Constraint::Length(1), Constraint::Min(1)]).split(area);
-    let (banner, color) = if app.winget_ready == Some(true) {
-        (
-            "winget ready - space select, enter install (results in log)",
+    let (banner, color) = match app.winget_ready {
+        Some(true) => (
+            "winget ready - space select, enter install, r reinstall/repair winget only",
             Color::Green,
-        )
-    } else {
-        (
-            "winget NOT found - enter bootstraps or repairs it (internet)",
+        ),
+        Some(false) => (
+            "winget NOT working - r installs/repairs winget only, enter also installs selected apps",
             Color::Yellow,
-        )
+        ),
+        None => ("checking winget...", Color::DarkGray),
     };
     frame.render_widget(
         Paragraph::new(Line::from(Span::styled(
@@ -1001,11 +1053,21 @@ fn draw_console_placeholder(frame: &mut Frame, area: Rect, title: &str, hint: &s
     frame.render_widget(Paragraph::new(text).block(Block::bordered()), area);
 }
 
-fn draw_footer(frame: &mut Frame, area: Rect, modal: bool, busy: Option<&'static str>) {
+fn draw_footer(
+    frame: &mut Frame,
+    area: Rect,
+    modal: bool,
+    busy: Option<&'static str>,
+    apps: bool,
+) {
     let text = if let Some(label) = busy {
         format!("working: {label}")
     } else if modal {
         String::from("y = confirm  n/Esc = cancel")
+    } else if apps {
+        String::from(
+            "h/l focus pane  j/k move  space toggle  enter install selected  r install/repair winget only  q quit",
+        )
     } else {
         String::from(
             "h/l focus pane  j/k move  space toggle  a/A select all  x/X clear  1/2/3 preset  enter apply  u undo  q quit",
@@ -1170,7 +1232,7 @@ fn tweak_line(app: &App, pack_index: usize, tweak_index: usize) -> Line<'static>
 
 fn status_letter(status: Status) -> (&'static str, Color) {
     match status {
-        Status::Applied => ("A", Color::Green),
+        Status::Applied | Status::Neutral => ("A", Color::Green),
         Status::Default => ("D", Color::Gray),
         Status::Mixed => ("M", Color::Red),
         Status::Unknown => ("U", Color::Blue),

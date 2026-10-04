@@ -4,6 +4,7 @@ meta = { id = "debloat-edge", title = "Edge / IE removal", description = "Forced
 id = "edge-uninstall"
 name = "Edge: forced uninstall + leftover cleanup"
 group = "Edge removal"
+os = "10"
 
 [[tweak.action]]
 type = "command"
@@ -58,6 +59,7 @@ exit 1
 id = "edge-registration"
 name = "Edge: drop app registration + Start menu client"
 group = "Edge removal"
+os = "10"
 
 [[tweak.action]]
 type = "command"
@@ -85,6 +87,7 @@ exit 1
 id = "ie-feature-remove"
 name = "IE: remove Internet-Explorer-Optional-amd64 feature"
 group = "Internet Explorer 11"
+os = "10"
 
 [[tweak.action]]
 type = "command"
@@ -103,6 +106,7 @@ exit 2
 id = "ie-shortcuts"
 name = "IE: remove Start menu client + shortcuts"
 group = "Internet Explorer 11"
+os = "10"
 
 [[tweak.action]]
 type = "command"
