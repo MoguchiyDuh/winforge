@@ -310,6 +310,20 @@ apply = 0
 reset = 2
 
 [[tweak]]
+id = "taskbar-search-icon"
+name = "Taskbar: search as icon only"
+group = "Taskbar"
+preset = "manual"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Search'
+name = "SearchboxTaskbarMode"
+regtype = "dword"
+apply = 1
+reset = 2
+
+[[tweak]]
 id = "taskbar-buttons"
 name = "Taskbar: Task View, People, Ink buttons off"
 group = "Taskbar"

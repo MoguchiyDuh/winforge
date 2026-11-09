@@ -1,0 +1,31 @@
+meta = { id = "onedrive", title = "OneDrive removal", description = "Uninstalls the OneDrive client, removes its leftovers and disables OneSyncSvc. One-way: the client is not restored; files in the OneDrive folder are left in place.", oneway = true }
+
+[[tweak]]
+id = "onedrive-remove"
+name = "OneDrive: uninstall client + leftovers, sync service disabled"
+group = "OneDrive"
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$od = $Env:OneDrive
+$folder = [bool]$od -and (Test-Path -LiteralPath $od -PathType Container)
+if ($folder) { icacls $od /deny '*S-1-5-32-544:(D,DC)' | Out-Null }
+try {
+    Start-Process -FilePath (Join-Path $Env:SystemRoot 'System32\OneDriveSetup.exe') -ArgumentList '/uninstall' -Wait -ErrorAction SilentlyContinue
+    Get-Process -Name FileCoAuth -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    foreach ($p in @((Join-Path $Env:LocalAppData 'Microsoft\OneDrive'), (Join-Path $Env:ProgramData 'Microsoft OneDrive'))) {
+        if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+} finally {
+    if ($folder) { icacls $od /remove:d '*S-1-5-32-544' | Out-Null }
+}
+if (Test-Path -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Services\OneSyncSvc') { Set-Service -Name OneSyncSvc -StartupType Disabled }
+exit 0
+'''
+check = '''
+$exe = Join-Path $Env:LocalAppData 'Microsoft\OneDrive\OneDrive.exe'
+$leftover = Join-Path $Env:ProgramData 'Microsoft OneDrive'
+if (-not (Test-Path -LiteralPath $exe) -and -not (Test-Path -LiteralPath $leftover)) { exit 0 }
+exit 1
+'''

@@ -301,3 +301,14 @@ apply = "remove"
 type = "appx"
 pattern = 'MicrosoftWindows.Client.WebExperience'
 apply = "remove"
+
+[[tweak]]
+id = "appx-coreai"
+name = "Appx: Windows AI CoreAI package"
+group = "AppX packages"
+os = "11"
+
+[[tweak.action]]
+type = "appx"
+pattern = 'MicrosoftWindows.Client.CoreAI'
+apply = "remove"
