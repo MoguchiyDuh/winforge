@@ -78,13 +78,13 @@ fn main() {
             errors.push(format!("{}: {err}", path.display()));
         }
     }
-    let mas_cmd_path = manifest.join("mas").join("MAS_AIO.cmd");
+    let mas_dir = manifest.join("mas").join("MAS").join("All-In-One-Version-KL");
+    let mas_cmd_path = mas_dir.join("MAS_AIO.cmd");
     let mas_bytes = fs::read(&mas_cmd_path).unwrap_or_default();
     let crlf_ok = mas_bytes.windows(2).any(|pair| pair == [b'\r', b'\n']);
-    let tail_ok = mas_bytes.ends_with(&[b'\r', b'\n', b'\r', b'\n']);
-    if !crlf_ok || !tail_ok {
+    if !crlf_ok {
         errors.push(format!(
-            "{}: MAS_AIO.cmd must have CRLF line endings and end with an empty line",
+            "{}: MAS_AIO.cmd must have CRLF line endings",
             mas_cmd_path.display()
         ));
     }
@@ -97,7 +97,7 @@ fn main() {
             errors.len()
         );
     }
-    write_embeds(&packs, &apps, &assets, &scripts, &manifest.join("mas"));
+    write_embeds(&packs, &apps, &assets, &scripts, &mas_dir);
     println!("cargo:rerun-if-changed=build.rs");
     for dir in ["packs", "apps", "assets", "scripts", "mas"] {
         println!("cargo:rerun-if-changed={dir}");

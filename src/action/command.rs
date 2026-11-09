@@ -16,7 +16,15 @@ pub fn status(act: &CommandAction) -> Status {
 }
 
 pub fn apply(act: &CommandAction) -> Outcome {
-    return change(&act.apply);
+    let outcome = change(&act.apply);
+    if outcome != Outcome::Done {
+        return outcome;
+    }
+    return match status(act) {
+        Status::Applied => Outcome::Done,
+        Status::Default => Outcome::Failed("applied, but check still reports default".into()),
+        _ => Outcome::Failed("applied, but check could not confirm".into()),
+    };
 }
 
 pub fn reset(act: &CommandAction) -> Outcome {

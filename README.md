@@ -6,7 +6,7 @@ Single-binary Windows 10/11 tweak and debloat tool. One static Rust exe — Powe
 
 - 14 packs / 163 tweaks / ~560 actions: registry, services, scheduled tasks, AppX removal, file ops, command execution
 - Windows 10 and Windows 11 aware: tweaks/actions can be gated per OS (`os = "10"` / `"11"`, build >= 22000 = 11); wrong-OS actions are filtered out at load
-- Windows 11 coverage: classic right-click menu, Copilot / Recall / Windows AI service and CoreAI package removal, Edge and IE removal (ungated for 11), OneDrive removal, telemetry and consumer features, Store search suggestions off, search as icon-only taskbar button (`taskbar-search-icon`)
+- Windows 11 coverage: classic right-click menu, Copilot / Recall / agent and Click to Do policies, WindowsAI and Office Actions tasks, Ask Copilot in taskbar search, Office AI training and content safety, Windows AI service disabled, Edge and IE removal (ungated for 11), OneDrive removal, telemetry and consumer features, Store search suggestions off, search as icon-only taskbar button (`taskbar-search-icon`)
 - Every non-oneway tweak ships stock-value resets — apply and revert are both first-class paths
 - Per-tweak state detection: `A` applied, `D` default, `M` mixed, `U` unknown, `X` absent
 
@@ -56,13 +56,16 @@ Personal/one-shot tweaks (theme, accent, wallpaper, WSL/SSH setup) and one-way p
 - `apps/` — winget app catalog (TOML)
 - `scripts/` — PowerShell helpers embedded into the exe
 - `src/` — the tool: engine, TUI, CLI, winget, activation
-- `mas/` — payload, embedded verbatim
+- `mas/` — git submodule of [massgravel/Microsoft-Activation-Scripts](https://github.com/massgravel/Microsoft-Activation-Scripts), pinned to a commit; `MAS/All-In-One-Version-KL/MAS_AIO.cmd` is embedded verbatim
 
 ## Build
 
 ```
+git clone --recursive https://github.com/MoguchiyDuh/winforge.git
 cargo build --release
 ```
+
+Existing clone: `git submodule update --init --recursive`.
 
 Targets `x86_64-pc-windows-gnu` with static CRT (`.cargo/config.toml`); the result is a fully self-contained exe.
 

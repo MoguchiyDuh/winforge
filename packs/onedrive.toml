@@ -20,7 +20,7 @@ try {
 } finally {
     if ($folder) { icacls $od /remove:d '*S-1-5-32-544' | Out-Null }
 }
-if (Test-Path -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Services\OneSyncSvc') { Set-Service -Name OneSyncSvc -StartupType Disabled }
+Get-ChildItem -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Services' | Where-Object { $_.PSChildName -like 'OneSyncSvc*' } | ForEach-Object { Set-ItemProperty -LiteralPath $_.PSPath -Name Start -Value 4 }
 exit 0
 '''
 check = '''

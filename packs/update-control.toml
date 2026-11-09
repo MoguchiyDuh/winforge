@@ -283,7 +283,6 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
-os = "10"
 path = 'HKLM\SOFTWARE\Microsoft\EdgeUpdate'
 name = "DoNotUpdateToEdgeWithChromium"
 regtype = "dword"
@@ -300,7 +299,6 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
-os = "10"
 path = 'HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate'
 name = "DoNotUpdateToEdgeWithChromium"
 regtype = "dword"
@@ -317,7 +315,6 @@ reset = { delete = true }
 
 [[tweak.action]]
 type = "registry"
-os = "10"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate'
 name = "DoNotUpdateToEdgeWithChromium"
 regtype = "dword"

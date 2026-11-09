@@ -426,7 +426,6 @@ id = "activity-history"
 name = "Telemetry: activity history upload off"
 group = "Activity history"
 preset = "min"
-os = "10"
 
 [[tweak.action]]
 type = "registry"
@@ -679,6 +678,89 @@ regtype = "dword"
 apply = 1
 reset = { delete = true }
 
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+name = "DisableSettingsAgent"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+name = "DisableAgentConnectors"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+name = "DisableAgentWorkspaces"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+name = "DisableRemoteAgentConnectors"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\Shell\ClickToDo'
+name = "DisableClickToDo"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\SettingSync\WindowsSettingHandlers'
+name = "A9HomeContentEnabled"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "command"
+apply = '''
+$name = 'winforge-ai-tasks'
+$cmd = "Get-ScheduledTask -TaskPath '*WindowsAI*' -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null; Get-ScheduledTask -TaskName '*Office Actions Server*' -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null"
+$enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -EncodedCommand $enc"
+$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+Register-ScheduledTask -TaskName $name -Action $action -Principal $principal -Force | Out-Null
+Start-ScheduledTask -TaskName $name
+$deadline = (Get-Date).AddSeconds(60)
+while ((Get-ScheduledTask -TaskName $name).State -eq 'Running' -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
+Unregister-ScheduledTask -TaskName $name -Confirm:$false
+exit 0
+'''
+reset = '''
+$name = 'winforge-ai-tasks'
+$cmd = "Get-ScheduledTask -TaskPath '*WindowsAI*' -ErrorAction SilentlyContinue | Enable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null; Get-ScheduledTask -TaskName '*Office Actions Server*' -ErrorAction SilentlyContinue | Enable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null"
+$enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -EncodedCommand $enc"
+$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+Register-ScheduledTask -TaskName $name -Action $action -Principal $principal -Force | Out-Null
+Start-ScheduledTask -TaskName $name
+$deadline = (Get-Date).AddSeconds(60)
+while ((Get-ScheduledTask -TaskName $name).State -eq 'Running' -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
+Unregister-ScheduledTask -TaskName $name -Confirm:$false
+exit 0
+'''
+check = '''
+$t = @(Get-ScheduledTask -TaskPath '*WindowsAI*' -ErrorAction SilentlyContinue) + @(Get-ScheduledTask -TaskName '*Office Actions Server*' -ErrorAction SilentlyContinue)
+if ($t | Where-Object { $_.State -ne 'Disabled' }) { exit 1 }
+exit 0
+'''
+
+
 [[tweak]]
 id = "ai-copilot-off"
 name = "AI: Copilot off"
@@ -748,6 +830,23 @@ name = "DisableImageCreator"
 regtype = "dword"
 apply = 1
 reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Paint'
+name = "DisableGenerativeErase"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Paint'
+name = "DisableRemoveBackground"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
 
 [[tweak]]
 id = "backup-nag-off"
@@ -917,7 +1016,6 @@ id = "ie-policy-keys"
 name = "IE: first-run/migration policies, process off"
 group = "Internet Explorer 11"
 preset = "min"
-os = "10"
 
 [[tweak.action]]
 type = "registry"
@@ -969,6 +1067,125 @@ preset = "min"
 type = "registry"
 path = 'HKLM\SOFTWARE\Policies\Microsoft\MRT'
 name = "DontReportInfectionInformation"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+
+[[tweak]]
+id = "ai-ask-copilot-off"
+name = "AI: Ask Copilot in taskbar search off"
+group = "Windows AI"
+preset = "min"
+os = "11"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+name = "TaskbarCompanion"
+regtype = "dword"
+apply = 0
+reset = 1
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked'
+name = "{CB3B0003-8088-4EDE-8769-8B354AB2FF8C}"
+regtype = "sz"
+apply = 'Ask Copilot'
+reset = { delete = true }
+
+
+[[tweak]]
+id = "ai-office-off"
+name = "AI: Office AI training, content safety and connected content off"
+group = "Windows AI"
+preset = "min"
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\training\general'
+name = "disabletraining"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\training\specific\adaptivefloatie'
+name = "disabletrainingofadaptivefloatie"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKCU\Software\Policies\Microsoft\office\16.0\common\privacy'
+name = "usercontentdisabled"
+regtype = "dword"
+apply = 2
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\general'
+name = "disablecontentsafety"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\specific\alternativetext'
+name = "disablecontentsafety"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\specific\imagequestionandanswering'
+name = "disablecontentsafety"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\specific\promptassistance'
+name = "disablecontentsafety"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\specific\rewrite'
+name = "disablecontentsafety"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\specific\summarization'
+name = "disablecontentsafety"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\specific\summarizationwithreferences'
+name = "disablecontentsafety"
+regtype = "dword"
+apply = 1
+reset = { delete = true }
+
+[[tweak.action]]
+type = "registry"
+path = 'HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\ai\contentsafety\specific\texttotable'
+name = "disablecontentsafety"
 regtype = "dword"
 apply = 1
 reset = { delete = true }
