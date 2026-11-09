@@ -4,8 +4,9 @@ Single-binary Windows 10/11 tweak and debloat tool. One static Rust exe — Powe
 
 ## What it does
 
-- 12 packs / 143 tweaks / ~500 actions: registry, services, scheduled tasks, AppX removal, file ops, command execution
+- 14 packs / 163 tweaks / ~560 actions: registry, services, scheduled tasks, AppX removal, file ops, command execution
 - Windows 10 and Windows 11 aware: tweaks/actions can be gated per OS (`os = "10"` / `"11"`, build >= 22000 = 11); wrong-OS actions are filtered out at load
+- Windows 11 coverage: classic right-click menu, Copilot / Recall / Windows AI service and CoreAI package removal, Edge and IE removal (ungated for 11), OneDrive removal, telemetry and consumer features, Store search suggestions off, search as icon-only taskbar button (`taskbar-search-icon`)
 - Every non-oneway tweak ships stock-value resets — apply and revert are both first-class paths
 - Per-tweak state detection: `A` applied, `D` default, `M` mixed, `U` unknown, `X` absent
 
@@ -29,13 +30,15 @@ For scripted/VM use without the TUI:
 winforge --list
 winforge --preset std --apply --yes
 winforge --select privacy:all --select ceip --reset --yes
+winforge --select edge-uninstall --select ai-copilot-off --select context-menu-classic --apply --yes
+winforge --select onedrive:all --apply --yes
 winforge --winget-repair
 winforge --dump state.json
 ```
 
 `--winget-repair` bootstraps or repairs winget (App Installer package, NuGet provider, Microsoft.WinGet.Client module, source reset) and installs nothing else.
 
-`--select` takes tweak ids, `pack:all`, or `all`. `--preset min|std|max` expands to its tweak set. `--yes` skips confirmation. The exe relaunches itself elevated, preserving the argument list.
+`--select` takes tweak ids, `pack:all`, or `all`. `--preset min|std|max` expands to its tweak set. `--apply` or `--reset` picks the direction. `--yes` skips confirmation. The exe relaunches itself elevated, preserving the argument list; for HKCU tweaks run it inside the target user's session (scheduled task with `-LogonType Interactive -RunLevel Highest`) so the values land in that user's profile.
 
 ## Presets
 
@@ -45,7 +48,7 @@ winforge --dump state.json
 | `std` | min + performance, power plan, explorer QoL |
 | `max` | std + aggressive tweaks (defender suspend, smartscreen, pagefile, search indexing) |
 
-Personal/one-shot tweaks (theme, accent, wallpaper, WSL/SSH setup) and irreversible AppX removals are never part of a preset.
+Personal/one-shot tweaks (theme, accent, wallpaper, WSL/SSH setup) and one-way packs (`appx-bloat`, `debloat-edge`, `debloat-explorer`, `onedrive`) are never part of a preset.
 
 ## Repository layout
 
